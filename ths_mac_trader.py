@@ -42,6 +42,15 @@ class TradeOrder:
     direction: TradeDirection  # 买入/卖出
 
 
+@dataclass
+class Position:
+    """持仓信息"""
+    stock_code: str      # 股票代码
+    stock_name: str      # 股票名称
+    available_qty: int   # 可用数量
+    current_price: float # 当前价格（可选）
+
+
 class THSMacTrader:
     """
     同花顺 Mac 版自动化交易类
@@ -73,6 +82,10 @@ class THSMacTrader:
 
             # 持仓列表区域（用于点击选择股票）
             'position_area': (400, 380),  # 持仓列表起始位置
+
+            # 持仓列表截图区域 (x, y, width, height) - 用于OCR识别
+            # 需要包含完整的持仓表格，从表头到最后一行
+            'position_list_region': (259, 378, 1102, 689),  # 默认区域，需要校准
         }
 
         # 绝对坐标模式（向后兼容）
@@ -347,6 +360,183 @@ class THSMacTrader:
             direction=TradeDirection.SELL
         )
         return self.place_order(order, confirm)
+
+    def get_positions_from_input(self) -> list:
+        """
+        从用户输入获取持仓列表
+        用户需要手动提供持仓信息
+
+        返回: Position 对象列表
+        """
+        print("\n" + "="*60)
+        print("📊 输入持仓信息")
+        print("="*60)
+        print("请输入你的持仓信息（每行一个，格式：股票代码,可用数量,卖出价格）")
+        print("例如: 603993,100,24.5")
+        print("输入完成后，输入空行结束")
+        print("="*60 + "\n")
+
+        positions = []
+        while True:
+            line = input("持仓 (或按 Enter 结束): ").strip()
+            if not line:
+                break
+
+            try:
+                parts = line.split(',')
+                if len(parts) >= 2:
+                    code = parts[0].strip()
+                    qty = int(parts[1].strip())
+                    price = float(parts[2].strip()) if len(parts) >= 3 else 0.0
+
+                    position = Position(
+                        stock_code=code,
+                        stock_name="",  # 名称可选
+                        available_qty=qty,
+                        current_price=price
+                    )
+                    positions.append(position)
+                    print(f"  ✅ 已添加: {code} - {qty}股 @ {price if price > 0 else '市价'}")
+                else:
+                    print("  ❌ 格式错误，请重新输入")
+            except ValueError as e:
+                print(f"  ❌ 输入错误: {e}，请重新输入")
+
+        print(f"\n共添加 {len(positions)} 个持仓")
+        return positions
+
+    def get_positions_from_ocr(self) -> list:
+        """
+        使用OCR从截图获取持仓列表
+        需要 ocr_positions.py 模块
+
+        返回: Position 对象列表
+        """
+        try:
+            from ocr_positions import PositionOCR
+
+            print("\n" + "="*60)
+            print("📸 OCR持仓识别")
+            print("="*60)
+
+            ocr = PositionOCR()
+            positions = ocr.get_positions_interactive()
+
+            return positions
+
+        except ImportError:
+            print("❌ 无法导入OCR模块，切换到手动输入")
+            return self.get_positions_from_input()
+        except Exception as e:
+            print(f"❌ OCR识别失败: {e}")
+            print("切换到手动输入...")
+            return self.get_positions_from_input()
+
+    def clear_all_positions(self, positions: list = None, confirm: bool = False,
+                           use_market_price: bool = False, use_ocr: bool = False) -> bool:
+        """
+        清仓操作 - 卖出所有持仓股票
+
+        参数:
+            positions: Position 对象列表，如果为 None 则从用户输入/OCR获取
+            confirm: 是否自动确认每笔订单（谨慎使用！）
+            use_market_price: 是否使用市价（当前价的某个偏移）
+            use_ocr: 是否使用OCR识别持仓（需要截图）
+
+        返回:
+            是否全部执行成功
+        """
+        print("\n" + "="*70)
+        print("⚠️  清仓操作")
+        print("="*70)
+
+        # 如果没有提供持仓列表，从用户输入或OCR获取
+        if positions is None:
+            if use_ocr:
+                positions = self.get_positions_from_ocr()
+            else:
+                # 询问用户选择输入方式
+                print("\n选择持仓信息输入方式：")
+                print("1. 手动输入")
+                print("2. OCR识别（从截图）")
+                choice = input("请选择 [1-2] (默认1): ").strip() or "1"
+
+                if choice == "2":
+                    positions = self.get_positions_from_ocr()
+                else:
+                    positions = self.get_positions_from_input()
+
+        if not positions:
+            print("没有持仓信息，操作取消")
+            return False
+
+        # 显示清仓计划
+        print("\n" + "="*70)
+        print("📋 清仓计划：")
+        print("="*70)
+        for i, pos in enumerate(positions, 1):
+            price_str = f"{pos.current_price}" if pos.current_price > 0 else "市价"
+            print(f"{i}. {pos.stock_code} - 卖出 {pos.available_qty} 股 @ {price_str}")
+        print("="*70)
+
+        # 二次确认
+        if not confirm:
+            confirm_input = input("\n⚠️  确认要清仓吗？(输入 'YES' 继续): ").strip()
+            if confirm_input != 'YES':
+                print("操作已取消")
+                return False
+
+        # 执行清仓
+        print("\n开始执行清仓操作...")
+        success_count = 0
+        failed_count = 0
+
+        for i, pos in enumerate(positions, 1):
+            print(f"\n[{i}/{len(positions)}] 处理 {pos.stock_code}...")
+
+            # 确定卖出价格
+            if use_market_price or pos.current_price <= 0:
+                # 这里可以接入行情接口获取当前价
+                # 暂时使用一个占位价格，用户需要在界面确认
+                sell_price = 0.01  # 占位价格，实际会被同花顺自动填充
+                print(f"  → 使用自动价格（同花顺会自动填充当前价）")
+            else:
+                sell_price = pos.current_price
+
+            try:
+                # 执行卖出
+                success = self.sell(
+                    code=pos.stock_code,
+                    price=sell_price,
+                    quantity=pos.available_qty,
+                    confirm=confirm
+                )
+
+                if success:
+                    success_count += 1
+                    print(f"  ✅ {pos.stock_code} 卖出指令已发送")
+                else:
+                    failed_count += 1
+                    print(f"  ❌ {pos.stock_code} 卖出失败")
+
+                # 每笔订单之间间隔
+                if i < len(positions):
+                    time.sleep(2)  # 间隔2秒
+
+            except Exception as e:
+                failed_count += 1
+                print(f"  ❌ {pos.stock_code} 异常: {e}")
+
+        # 总结
+        print("\n" + "="*70)
+        print("📊 清仓操作完成")
+        print("="*70)
+        print(f"成功: {success_count} 笔")
+        print(f"失败: {failed_count} 笔")
+        print(f"总计: {len(positions)} 笔")
+        print("="*70)
+
+        return failed_count == 0
 
     def calibrate(self):
         """

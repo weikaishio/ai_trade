@@ -30,6 +30,9 @@ This is a GUI automation project for automated stock trading on the TongHuaShun 
 - `buy()` / `sell()` - Convenience methods for trading
 - `switch_direction()` - Toggle between buy/sell modes
 - `input_stock_code()` / `input_price()` / `input_quantity()` - Form filling
+- `clear_all_positions()` - Batch sell all positions
+- `get_positions_from_input()` - Interactive position input helper
+- `get_positions_from_ocr()` - OCR-based position extraction from screenshots (NEW)
 
 **Calibration Tools**:
 - `calibrate()` - Interactive coordinate calibration wizard
@@ -168,6 +171,30 @@ except Exception as e:
     # Send alert notification
 ```
 
+### Clear All Positions Pattern (NEW)
+
+```python
+from ths_mac_trader import THSMacTrader, Position
+
+trader = THSMacTrader()
+
+# Method 1: Interactive input
+trader.clear_all_positions()
+
+# Method 2: Predefined positions
+positions = [
+    Position("603993", "Stock A", 100, 24.33),
+    Position("600000", "Stock B", 200, 10.50),
+]
+trader.clear_all_positions(positions=positions, confirm=False)
+
+# Method 3: Market price mode (let THS auto-fill prices)
+trader.clear_all_positions(
+    positions=positions,
+    use_market_price=True
+)
+```
+
 ## Project-Specific Conventions
 
 1. **Coordinate Format**: All coordinates stored as tuples `(x, y)`
@@ -180,17 +207,26 @@ except Exception as e:
 
 ```
 auto_trade/
-├── ths_mac_trader.py       # Main automation logic
-├── test.py                 # Example usage
-├── calibrate_helper.py     # Coordinate calibration tool (NEW)
-├── README.md               # User documentation (Chinese)
-├── QUICKSTART.md           # Quick start guide (NEW)
-├── TROUBLESHOOTING.md      # Troubleshooting guide (NEW)
-├── CLAUDE.md               # Documentation for Claude Code
+├── ths_mac_trader.py          # Main automation logic
+├── test.py                    # Example usage (buy/sell)
+├── test_clear_positions.py    # Clear positions test
+├── test_ocr_clear.py          # OCR clear positions test (NEW)
+├── example_clear.py           # Simple clear example
+├── ocr_positions.py           # OCR position extraction (NEW)
+├── calibrate_helper.py        # Coordinate calibration tool
+├── find_correct_positions.py  # Interactive calibration with verification
+├── README.md                  # User documentation (Chinese)
+├── QUICKSTART.md              # Quick start guide
+├── TROUBLESHOOTING.md         # Troubleshooting guide
+├── CLEAR_POSITIONS_GUIDE.md   # Clear positions guide
+├── OCR_GUIDE.md               # OCR usage guide (NEW)
+├── OCR_SUMMARY.md             # OCR quick reference (NEW)
+├── CLAUDE.md                  # Documentation for Claude Code
+├── coordinates_config.txt     # Generated coordinates config
 └── .claude/
     ├── commands/
-    │   └── deepthink.md    # Custom slash command template
-    └── agents/             # Custom agent definitions
+    │   └── deepthink.md       # Custom slash command template
+    └── agents/                # Custom agent definitions
 ```
 
 ## When Making Changes
