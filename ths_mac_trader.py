@@ -89,9 +89,16 @@ class THSMacTrader:
             # 持仓标签页按钮（用于切换到持仓界面）
             'position_tab': (304, 351),    # "持仓" 标签按钮，需要校准
 
+            # 委托标签页按钮（用于切换到委托界面）
+            'order_tab': (360, 352),       # "委托" 标签按钮，需要校准
+
             # 持仓列表截图区域 (x, y, width, height) - 用于OCR识别
             # 需要包含完整的持仓表格，从表头到最后一行
             'position_list_region': (259, 378, 1102, 689),  # 默认区域，需要校准
+
+            # 委托列表截图区域 (x, y, width, height) - 用于OCR识别
+            # 需要包含完整的委托表格，从表头到最后一行
+            'order_list_region': (259, 378, 1102, 689),     # 默认区域，需要校准
         }
 
         # 绝对坐标模式（向后兼容）
@@ -299,6 +306,22 @@ class THSMacTrader:
             print("⚠️  未配置持仓标签坐标，跳过切换")
             print("   提示：运行校准工具添加 'position_tab' 坐标")
 
+    def switch_to_order_tab(self):
+        """
+        切换到委托标签页
+        确保在OCR识别委托前显示的是委托界面
+        """
+        print("正在切换到委托标签页...")
+
+        # 点击委托标签
+        if 'order_tab' in self.coords:
+            self.click_at(*self.coords['order_tab'])
+            time.sleep(0.5)  # 等待标签页切换
+            print("✅ 已切换到委托标签页")
+        else:
+            print("⚠️  未配置委托标签坐标，跳过切换")
+            print("   提示：运行校准工具添加 'order_tab' 坐标")
+
     def input_stock_code(self, code: str):
         """
         输入股票代码
@@ -496,6 +519,46 @@ class THSMacTrader:
             print(f"❌ OCR识别失败: {e}")
             print("切换到手动输入...")
             return self.get_positions_from_input()
+
+    def get_orders_from_ocr(self, quick_mode: bool = True) -> list:
+        """
+        使用OCR从截图获取委托列表
+        需要 ocr_orders.py 模块
+
+        参数:
+            quick_mode: 是否使用快速模式（固定坐标）
+
+        返回: Order 对象列表
+        """
+        try:
+            from ocr_orders import OrderOCR
+
+            print("\n" + "="*60)
+            print("📸 OCR委托识别")
+            print("="*60)
+
+            ocr = OrderOCR()
+
+            if quick_mode:
+                # 快速模式：直接使用固定坐标截图
+                screenshot_path = ocr.capture_order_area(use_calibrated_region=True)
+                if screenshot_path:
+                    orders = ocr.extract_orders_with_ocr(screenshot_path)
+                    if orders:
+                        return orders
+                    else:
+                        print("\n⚠️  OCR识别失败，切换到交互式模式")
+
+            # 交互式模式
+            orders = ocr.get_orders_interactive()
+            return orders
+
+        except ImportError:
+            print("❌ 无法导入OCR模块")
+            return []
+        except Exception as e:
+            print(f"❌ OCR识别失败: {e}")
+            return []
 
     def smart_sell(self, confirm: bool = False) -> bool:
         """
@@ -888,12 +951,13 @@ def main():
 ║  4. 测试卖出（不确认）                                    ║
 ║  5. 智能卖出（OCR识别持仓）⭐                              ║
 ║  6. 批量清仓                                              ║
+║  7. 查看委托（OCR识别）⭐                                  ║
 ║  0. 退出                                                  ║
 ╚══════════════════════════════════════════════════════════╝
     """)
 
     while True:
-        choice = input("\n请选择功能 [0-6]: ").strip()
+        choice = input("\n请选择功能 [0-7]: ").strip()
 
         if choice == '0':
             print("再见！")
@@ -924,6 +988,22 @@ def main():
         elif choice == '6':
             # 批量清仓
             trader.clear_all_positions(confirm=True)
+
+        elif choice == '7':
+            # 查看委托列表 - OCR识别
+            orders = trader.get_orders_from_ocr(quick_mode=True)
+            if orders:
+                print("\n" + "="*70)
+                print("📋 当前委托列表")
+                print("="*70)
+                for i, order in enumerate(orders, 1):
+                    print(f"{i}. {order.stock_code} {order.direction}")
+                    print(f"   价格: {order.price}  数量: {order.quantity}")
+                    print(f"   已成交: {order.traded_quantity}  状态: {order.status}")
+                    print()
+                print("="*70)
+            else:
+                print("\n暂无委托或识别失败")
 
         else:
             print("无效选择，请重试")
