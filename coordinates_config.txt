@@ -1,0 +1,19 @@
+# 相对坐标配置
+self.coords_relative = {
+    'buy_button': (334, 92),  # 【买入】按钮
+    'sell_button': (411, 94),  # 【卖出】按钮
+    'code_input': (323, 155),  # 【股票代码输入框】(交易面板中的，不是顶部搜索框！)
+    'price_input': (342, 202),  # 【价格输入框】
+    'quantity_input': (349, 263),  # 【数量输入框】
+    'confirm_button': (367, 309),  # 【确定买入/卖出】按钮
+}
+
+# 绝对坐标配置
+self.coords = {
+    'buy_button': (390, 117),  # 【买入】按钮
+    'sell_button': (467, 119),  # 【卖出】按钮
+    'code_input': (379, 180),  # 【股票代码输入框】(交易面板中的，不是顶部搜索框！)
+    'price_input': (398, 227),  # 【价格输入框】
+    'quantity_input': (405, 288),  # 【数量输入框】
+    'confirm_button': (423, 334),  # 【确定买入/卖出】按钮
+}

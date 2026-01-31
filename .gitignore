@@ -1,0 +1,9 @@
+*.pyc
+*.jpg
+*.png
+*.xml
+.DS_Store
+.idea/
+downloaded_images
+__pycache__/*
+tools/__pycache__/*
