@@ -1,21 +1,21 @@
 # FastAPI核心依赖
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
 
 # 认证和安全
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
 
 # 异步支持
-aiofiles==23.2.1
+aiofiles>=23.2.1
 
 # 行情数据（可选，用于市价买入）
-akshare==1.11.85
+akshare>=1.18.0
 
 # 日志和监控
-python-multipart==0.0.6
+python-multipart>=0.0.6
 
 # 已有的GUI自动化依赖（继承自主项目）
 # pyautogui==0.9.54

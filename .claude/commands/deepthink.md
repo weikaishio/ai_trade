@@ -8,7 +8,7 @@ Ultra think:
 4. 实现顺序应该如何安排才能最高效？
 </extended-thinking-tips>
 
-分析以下需求并在pixel_muse_server服务平台项目中实现：
+分析以下需求并在auto_trade平台项目中实现：
 
 $ARGUMENTS
 

@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # 服务器配置
     host: str = "127.0.0.1"
-    port: int = 8080
+    port: int = 8980
     workers: int = 1  # GUI自动化必须单线程
     reload: bool = False  # 生产环境禁用热重载
 

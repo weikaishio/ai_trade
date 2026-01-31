@@ -60,7 +60,7 @@ class TradingExecutor:
             return
 
         self.tasks: Dict[str, Task] = {}  # 任务字典
-        self.task_queue: asyncio.Queue = asyncio.Queue(maxsize=settings.max_queue_size)
+        self.task_queue: Optional[asyncio.Queue] = None  # 延迟创建（在事件循环中）
         self.is_running: bool = False
         self.worker_task: Optional[asyncio.Task] = None
 
@@ -105,6 +105,11 @@ class TradingExecutor:
         if self.is_running:
             logger.warning("任务处理器已在运行")
             return
+
+        # 在事件循环中创建队列（避免事件循环冲突）
+        if self.task_queue is None:
+            self.task_queue = asyncio.Queue(maxsize=settings.max_queue_size)
+            logger.info(f"任务队列已创建（最大容量: {settings.max_queue_size}）")
 
         self.is_running = True
         self.worker_task = asyncio.create_task(self._process_queue())
@@ -383,8 +388,12 @@ class TradingExecutor:
             任务ID
 
         异常:
-            RuntimeError: 队列已满
+            RuntimeError: 队列已满或未初始化
         """
+        # 检查队列是否已创建
+        if self.task_queue is None:
+            raise RuntimeError("任务队列未初始化，请先启动执行器")
+
         # 生成任务ID
         task_id = str(uuid.uuid4())
 
@@ -434,7 +443,7 @@ class TradingExecutor:
             "total_requests": self.total_requests,
             "successful_requests": self.successful_requests,
             "failed_requests": self.failed_requests,
-            "queue_size": self.task_queue.qsize(),
+            "queue_size": self.task_queue.qsize() if self.task_queue else 0,
             "uptime_seconds": time.time() - self.start_time,
             "is_running": self.is_running
         }
