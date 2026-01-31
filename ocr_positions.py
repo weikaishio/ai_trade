@@ -78,18 +78,29 @@ class PositionOCR:
             print("⚠️  无法激活同花顺窗口")
             return None
 
+        # 切换到持仓标签页（修复bug：确保显示持仓界面）
+        trader_instance = None
+        try:
+            from ths_mac_trader import THSMacTrader
+            trader_instance = THSMacTrader()
+            trader_instance.switch_to_position_tab()
+        except Exception as e:
+            print(f"⚠️  切换标签页失败: {e}")
+            print("   继续执行截图...")
+
         if region is None and use_calibrated_region:
             # 使用校准的固定坐标
             window_pos = self.get_window_position()
             if window_pos:
                 win_x, win_y, win_w, win_h = window_pos
 
-                # 从 THSMacTrader 导入坐标配置
-                from ths_mac_trader import THSMacTrader
-                trader = THSMacTrader()
+                # 获取trader实例（重用之前创建的或新建）
+                if trader_instance is None:
+                    from ths_mac_trader import THSMacTrader
+                    trader_instance = THSMacTrader()
 
                 # 获取相对坐标配置
-                rel_x, rel_y, width, height = trader.coords_relative.get('position_list_region', (550, 40, 560, 140))
+                rel_x, rel_y, width, height = trader_instance.coords_relative.get('position_list_region', (550, 40, 560, 140))
 
                 # 转换为绝对坐标
                 abs_x = win_x + rel_x

@@ -80,8 +80,14 @@ class THSMacTrader:
             # 确认按钮
             'confirm_button': (367, 309), # "确定买入" 或 "确定卖出" 按钮
 
+            # 模态确认对话框按钮（点击confirm_button后弹出的对话框）
+            'modal_confirm_button': (1068, 705),  # 对话框中的"确定"按钮，需要校准
+
             # 持仓列表区域（用于点击选择股票）
             'position_area': (400, 380),  # 持仓列表起始位置
+
+            # 持仓标签页按钮（用于切换到持仓界面）
+            'position_tab': (304, 351),    # "持仓" 标签按钮，需要校准
 
             # 持仓列表截图区域 (x, y, width, height) - 用于OCR识别
             # 需要包含完整的持仓表格，从表头到最后一行
@@ -90,6 +96,19 @@ class THSMacTrader:
 
         # 绝对坐标模式（向后兼容）
         self.coords = self.coords_relative.copy()
+        # self.coords = {
+        #     'buy_button': (387, 117),
+        #     'sell_button': (455, 117),
+        #     'code_input': (376, 180),
+        #     'price_input': (396, 228),
+        #     'quantity_input': (388, 289),
+        #     'confirm_button': (420, 335),
+        #     'modal_confirm_button': (1098, 735),
+        #     'position_area': (400, 380),  # 持仓列表起始位置
+        #     'position_tab': (304, 351),    # "持仓" 标签按钮，需要校准
+        #     'position_list_region': (259, 378, 1102, 689),  # 默认区域，需要校准
+        # }
+
 
         # 同花顺应用名称
         self.app_name = "同花顺"
@@ -264,6 +283,22 @@ class THSMacTrader:
             self.click_at(*self.coords['sell_button'])
         time.sleep(0.2)
 
+    def switch_to_position_tab(self):
+        """
+        切换到持仓标签页
+        确保在OCR识别持仓前显示的是持仓界面
+        """
+        print("正在切换到持仓标签页...")
+
+        # 点击持仓标签
+        if 'position_tab' in self.coords:
+            self.click_at(*self.coords['position_tab'])
+            time.sleep(0.5)  # 等待标签页切换
+            print("✅ 已切换到持仓标签页")
+        else:
+            print("⚠️  未配置持仓标签坐标，跳过切换")
+            print("   提示：运行校准工具添加 'position_tab' 坐标")
+
     def input_stock_code(self, code: str):
         """
         输入股票代码
@@ -286,9 +321,25 @@ class THSMacTrader:
     def confirm_order(self):
         """
         点击确认下单按钮
+        包括两步：
+        1. 点击表单上的"确定买入/卖出"按钮
+        2. 点击弹出对话框上的"确定"按钮（真正提交）
         """
+        # 第一步：点击表单确认按钮
+        print("  → 点击确认按钮...")
         self.click_at(*self.coords['confirm_button'])
-        time.sleep(0.5)
+        time.sleep(0.8)  # 等待对话框弹出
+
+        # 第二步：点击模态对话框的确认按钮
+        if 'modal_confirm_button' in self.coords:
+            print("  → 点击对话框确认按钮...")
+            self.click_at(*self.coords['modal_confirm_button'])
+            time.sleep(0.5)  # 等待订单提交
+            print("  ✅ 订单已提交")
+        else:
+            print("  ⚠️  未配置模态确认按钮坐标")
+            print("     请手动点击对话框确认按钮，或运行校准工具添加坐标")
+            time.sleep(2)  # 给用户时间手动点击
 
     def place_order(self, order: TradeOrder, confirm: bool = False) -> bool:
         """
@@ -405,10 +456,13 @@ class THSMacTrader:
         print(f"\n共添加 {len(positions)} 个持仓")
         return positions
 
-    def get_positions_from_ocr(self) -> list:
+    def get_positions_from_ocr(self, quick_mode: bool = True) -> list:
         """
         使用OCR从截图获取持仓列表
         需要 ocr_positions.py 模块
+
+        参数:
+            quick_mode: 是否使用快速模式（固定坐标）
 
         返回: Position 对象列表
         """
@@ -420,8 +474,19 @@ class THSMacTrader:
             print("="*60)
 
             ocr = PositionOCR()
-            positions = ocr.get_positions_interactive()
 
+            if quick_mode:
+                # 快速模式：直接使用固定坐标截图
+                screenshot_path = ocr.capture_position_area(use_calibrated_region=True)
+                if screenshot_path:
+                    positions = ocr.extract_positions_with_ocr(screenshot_path)
+                    if positions:
+                        return positions
+                    else:
+                        print("\n⚠️  OCR识别失败，切换到交互式模式")
+
+            # 交互式模式
+            positions = ocr.get_positions_interactive()
             return positions
 
         except ImportError:
@@ -431,6 +496,132 @@ class THSMacTrader:
             print(f"❌ OCR识别失败: {e}")
             print("切换到手动输入...")
             return self.get_positions_from_input()
+
+    def smart_sell(self, confirm: bool = False) -> bool:
+        """
+        智能卖出功能 - 自动识别持仓并让用户选择卖出
+
+        参数:
+            confirm: 是否自动确认订单（谨慎使用！）
+
+        返回:
+            是否执行成功
+        """
+        print("\n" + "="*70)
+        print("🎯 智能卖出 - OCR识别持仓")
+        print("="*70)
+
+        # 1. 获取持仓列表
+        print("\n正在识别当前持仓...")
+        positions = self.get_positions_from_ocr(quick_mode=True)
+
+        if not positions:
+            print("\n❌ 未获取到持仓信息")
+            return False
+
+        # 2. 显示持仓列表
+        print("\n" + "="*70)
+        print("📊 当前持仓列表")
+        print("="*70)
+        for i, pos in enumerate(positions, 1):
+            print(f"{i}. {pos.stock_code} ({pos.stock_name or '未知'})")
+            print(f"   可用数量: {pos.available_qty}股")
+            print(f"   当前价格: {pos.current_price}")
+            print()
+        print("="*70)
+
+        # 3. 让用户选择要卖出的股票
+        print("\n请选择要卖出的股票：")
+        print("提示: 输入序号，或输入 'a' 全部卖出，'q' 取消")
+
+        choice = input("\n请选择 [1-{}, a, q]: ".format(len(positions))).strip().lower()
+
+        if choice == 'q':
+            print("已取消")
+            return False
+
+        selected_positions = []
+
+        if choice == 'a':
+            # 全部卖出
+            selected_positions = positions
+            print(f"\n已选择全部卖出 ({len(positions)} 只股票)")
+        else:
+            # 单个卖出
+            try:
+                idx = int(choice) - 1
+                if 0 <= idx < len(positions):
+                    selected_positions = [positions[idx]]
+                    print(f"\n已选择: {positions[idx].stock_code}")
+                else:
+                    print("❌ 无效的序号")
+                    return False
+            except ValueError:
+                print("❌ 无效的输入")
+                return False
+
+        # 4. 对每个选中的股票，询问卖出数量和价格
+        for pos in selected_positions:
+            print("\n" + "─"*70)
+            print(f"📤 准备卖出: {pos.stock_code} ({pos.stock_name or '未知'})")
+            print(f"   可用数量: {pos.available_qty}股")
+            print(f"   当前价格: {pos.current_price}")
+            print("─"*70)
+
+            # 询问卖出数量
+            qty_input = input(f"\n卖出数量 (按 Enter 全部卖出 {pos.available_qty}股): ").strip()
+            if qty_input:
+                try:
+                    quantity = int(qty_input)
+                    if quantity <= 0 or quantity > pos.available_qty:
+                        print(f"❌ 数量无效，必须在 1-{pos.available_qty} 之间")
+                        continue
+                except ValueError:
+                    print("❌ 数量格式错误")
+                    continue
+            else:
+                quantity = pos.available_qty
+
+            # 询问卖出价格
+            price_input = input(f"卖出价格 (按 Enter 使用当前价 {pos.current_price}): ").strip()
+            if price_input:
+                try:
+                    price = float(price_input)
+                except ValueError:
+                    print("❌ 价格格式错误")
+                    continue
+            else:
+                price = pos.current_price
+
+            # 确认信息
+            print("\n✅ 卖出信息确认:")
+            print(f"   股票代码: {pos.stock_code}")
+            print(f"   卖出数量: {quantity}股")
+            print(f"   卖出价格: {price}")
+
+            if not confirm:
+                confirm_input = input("\n确认卖出？(y/n): ").strip().lower()
+                if confirm_input != 'y':
+                    print("已跳过")
+                    continue
+
+            # 执行卖出
+            print(f"\n正在卖出 {pos.stock_code}...")
+            success = self.sell(pos.stock_code, price, quantity, confirm=confirm)
+
+            if success:
+                print(f"✅ {pos.stock_code} 卖出成功")
+            else:
+                print(f"❌ {pos.stock_code} 卖出失败")
+
+            # 暂停一下，避免操作太快
+            time.sleep(1)
+
+        print("\n" + "="*70)
+        print("✅ 智能卖出操作完成")
+        print("="*70)
+
+        return True
 
     def clear_all_positions(self, positions: list = None, confirm: bool = False,
                            use_market_price: bool = False, use_ocr: bool = False) -> bool:
@@ -560,11 +751,14 @@ class THSMacTrader:
             "代码输入框",
             "价格输入框",
             "数量输入框",
-            "确认按钮"
+            "确认按钮",
+            "模态对话框确认按钮"  # 新增
         ]
 
         for label in labels:
             print(f"\n请将鼠标移动到【{label}】位置，然后在终端按 Enter...")
+            if label == "模态对话框确认按钮":
+                print("   提示：需要先点击'确认按钮'让对话框弹出，然后移动鼠标到对话框的确认按钮")
             user_input = input()
             if user_input.lower() == 'q':
                 break
@@ -584,7 +778,8 @@ class THSMacTrader:
             "代码输入框": "code_input",
             "价格输入框": "price_input",
             "数量输入框": "quantity_input",
-            "确认按钮": "confirm_button"
+            "确认按钮": "confirm_button",
+            "模态对话框确认按钮": "modal_confirm_button"  # 新增
         }
 
         for label, x, y in positions:
@@ -691,12 +886,14 @@ def main():
 ║  2. 实时鼠标位置                                          ║
 ║  3. 测试买入（不确认）                                    ║
 ║  4. 测试卖出（不确认）                                    ║
+║  5. 智能卖出（OCR识别持仓）⭐                              ║
+║  6. 批量清仓                                              ║
 ║  0. 退出                                                  ║
 ╚══════════════════════════════════════════════════════════╝
     """)
 
     while True:
-        choice = input("\n请选择功能 [0-4]: ").strip()
+        choice = input("\n请选择功能 [0-6]: ").strip()
 
         if choice == '0':
             print("再见！")
@@ -719,6 +916,14 @@ def main():
             price = float(input("请输入价格: ").strip())
             quantity = int(input("请输入数量: ").strip())
             trader.sell(code, price, quantity, confirm=False)
+
+        elif choice == '5':
+            # 智能卖出 - OCR识别持仓后选择卖出
+            trader.smart_sell(confirm=True)
+
+        elif choice == '6':
+            # 批量清仓
+            trader.clear_all_positions(confirm=True)
 
         else:
             print("无效选择，请重试")
