@@ -32,7 +32,15 @@ This is a GUI automation project for automated stock trading on the TongHuaShun 
 - `input_stock_code()` / `input_price()` / `input_quantity()` - Form filling
 - `clear_all_positions()` - Batch sell all positions
 - `get_positions_from_input()` - Interactive position input helper
-- `get_positions_from_ocr()` - OCR-based position extraction from screenshots (NEW)
+- `get_positions_from_ocr()` - OCR-based position extraction from screenshots
+- `smart_sell()` - Intelligent sell with OCR position recognition
+
+**Login & Authentication** (NEW):
+- `check_login_status()` - Detect if user is logged in
+- `auto_login()` - Automated login with account/password
+- `ensure_logged_in()` - Auto-detect and login if needed
+- `handle_captcha()` - Process CAPTCHA (manual or OCR)
+- `capture_captcha_image()` - Screenshot CAPTCHA image
 
 **Calibration Tools**:
 - `calibrate()` - Interactive coordinate calibration wizard
@@ -171,7 +179,7 @@ except Exception as e:
     # Send alert notification
 ```
 
-### Clear All Positions Pattern (NEW)
+### Clear All Positions Pattern
 
 ```python
 from ths_mac_trader import THSMacTrader, Position
@@ -195,6 +203,35 @@ trader.clear_all_positions(
 )
 ```
 
+### Auto Login Pattern (NEW)
+
+```python
+from ths_mac_trader import THSMacTrader
+import os
+
+trader = THSMacTrader()
+
+# Method 1: Simple auto login (password only)
+trader.auto_login(password="your_password")
+
+# Method 2: Auto login with account
+trader.auto_login(
+    account="your_account",
+    password="your_password"
+)
+
+# Method 3: Ensure logged in (recommended)
+# Auto-detect login status and login if needed
+trader.ensure_logged_in(
+    auto_login_enabled=True,
+    account=os.getenv("THS_ACCOUNT"),
+    password=os.getenv("THS_PASSWORD")
+)
+
+# Then proceed with trading
+trader.buy(code, price, qty)
+```
+
 ## Project-Specific Conventions
 
 1. **Coordinate Format**: All coordinates stored as tuples `(x, y)`
@@ -210,17 +247,20 @@ auto_trade/
 ├── ths_mac_trader.py          # Main automation logic
 ├── test.py                    # Example usage (buy/sell)
 ├── test_clear_positions.py    # Clear positions test
-├── test_ocr_clear.py          # OCR clear positions test (NEW)
+├── test_ocr_clear.py          # OCR clear positions test
+├── test_auto_login.py         # Auto login test (NEW)
 ├── example_clear.py           # Simple clear example
-├── ocr_positions.py           # OCR position extraction (NEW)
+├── example_auto_login.py      # Auto login examples (NEW)
+├── ocr_positions.py           # OCR position extraction
 ├── calibrate_helper.py        # Coordinate calibration tool
 ├── find_correct_positions.py  # Interactive calibration with verification
 ├── README.md                  # User documentation (Chinese)
 ├── QUICKSTART.md              # Quick start guide
 ├── TROUBLESHOOTING.md         # Troubleshooting guide
 ├── CLEAR_POSITIONS_GUIDE.md   # Clear positions guide
-├── OCR_GUIDE.md               # OCR usage guide (NEW)
-├── OCR_SUMMARY.md             # OCR quick reference (NEW)
+├── AUTO_LOGIN_GUIDE.md        # Auto login guide (NEW)
+├── OCR_GUIDE.md               # OCR usage guide
+├── OCR_SUMMARY.md             # OCR quick reference
 ├── CLAUDE.md                  # Documentation for Claude Code
 ├── coordinates_config.txt     # Generated coordinates config
 └── .claude/

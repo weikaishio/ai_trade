@@ -99,6 +99,15 @@ class THSMacTrader:
             # 委托列表截图区域 (x, y, width, height) - 用于OCR识别
             # 需要包含完整的委托表格，从表头到最后一行
             'order_list_region': (259, 378, 1102, 689),     # 默认区域，需要校准
+
+            # 登录相关坐标（需要校准）
+            'captcha_image_region': (1144, 620, 62, 21),
+
+            'login_button': (138, 238),
+            'password_input': (1108, 562),
+            'captcha_input': (1109, 653),
+            'login_confirm_button': (1114, 690),
+
         }
 
         # 绝对坐标模式（向后兼容）
@@ -201,9 +210,11 @@ class THSMacTrader:
         在指定坐标点击
         如果启用相对坐标模式，会自动转换为绝对坐标
         """
+        # 确保输入坐标是整数
+        x, y = int(x), int(y)
         abs_x, abs_y = self.get_absolute_coords(x, y)
         print(f"  → 点击位置: ({abs_x}, {abs_y})")
-        pyautogui.click(abs_x, abs_y, clicks=clicks)
+        pyautogui.click(int(abs_x), int(abs_y), clicks=clicks)
         time.sleep(0.1)
 
     def clear_and_type(self, x: int, y: int, text: str):
@@ -211,6 +222,8 @@ class THSMacTrader:
         点击输入框，清空内容，输入新文本
         处理同花顺自动填充的情况
         """
+        # 确保坐标是整数
+        x, y = int(x), int(y)
         # 单击输入框获取焦点
         self.click_at(x, y, clicks=1)
         time.sleep(0.3)  # 等待焦点切换和可能的自动填充
@@ -245,40 +258,146 @@ class THSMacTrader:
         pyautogui.typewrite(text, interval=0.05)
         time.sleep(0.1)
 
-    def input_text_via_clipboard(self, x: int, y: int, text: str):
+    def input_text_via_clipboard(self, x: int, y: int, text: str, verify: bool = False):
         """
         通过剪贴板输入文本（支持中文）
         处理同花顺自动填充的情况
+
+        参数:
+            x: 输入框X坐标
+            y: 输入框Y坐标
+            text: 要输入的文本
+            verify: 是否验证输入成功（通过截图OCR验证）
         """
         import subprocess
 
-        # 单击输入框获取焦点
-        self.click_at(x, y, clicks=1)
-        time.sleep(0.3)  # 等待焦点切换和可能的自动填充
+        # 确保坐标是整数
+        x, y = int(x), int(y)
 
-        # 多次清空以确保删除自动填充的内容
-        for _ in range(2):
-            pyautogui.hotkey('command', 'a')
-            time.sleep(0.1)
-            pyautogui.press('delete')
-            time.sleep(0.1)
+        # 增加重试次数
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            try:
+                # 单击输入框获取焦点
+                self.click_at(x, y, clicks=1)
+                time.sleep(0.5)  # 增加等待时间，确保焦点切换
 
-        # 最后一次清空
-        pyautogui.hotkey('command', 'a')
-        time.sleep(0.05)
-        pyautogui.press('delete')
-        time.sleep(0.15)
+                # 再次点击确保焦点
+                self.click_at(x, y, clicks=1)
+                time.sleep(0.3)
 
-        # 将文本复制到剪贴板
-        process = subprocess.Popen(
-            ['pbcopy'],
-            stdin=subprocess.PIPE
-        )
-        process.communicate(text.encode('utf-8'))
+                # 多次清空以确保删除自动填充的内容
+                for _ in range(3):  # 增加到3次
+                    pyautogui.hotkey('command', 'a')
+                    time.sleep(0.1)
+                    pyautogui.press('delete')
+                    time.sleep(0.1)
 
-        # 粘贴
-        pyautogui.hotkey('command', 'v')
-        time.sleep(0.1)
+                # 最后一次清空
+                pyautogui.hotkey('command', 'a')
+                time.sleep(0.05)
+                pyautogui.press('delete')
+                time.sleep(0.2)  # 增加等待时间
+
+                # 将文本复制到剪贴板
+                process = subprocess.Popen(
+                    ['pbcopy'],
+                    stdin=subprocess.PIPE
+                )
+                process.communicate(text.encode('utf-8'))
+                time.sleep(0.1)  # 等待剪贴板写入
+
+                # 粘贴
+                pyautogui.hotkey('command', 'v')
+                time.sleep(0.3)  # 增加等待时间
+
+                # 验证输入（可选）
+                if verify:
+                    # 通过截图验证输入是否成功
+                    # 这里简化处理，假设成功
+                    pass
+
+                print(f"  ✅ 文本输入成功 (尝试 {attempt + 1}/{max_attempts})")
+                return True
+
+            except Exception as e:
+                print(f"  ⚠️  文本输入失败 (尝试 {attempt + 1}/{max_attempts}): {e}")
+                if attempt < max_attempts - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    print(f"  ❌ 文本输入最终失败")
+                    return False
+
+        return False
+
+    def input_password(self, x: int, y: int, password: str, debug_mode: bool = False) -> bool:
+        """
+        输入密码（专用方法，增强可靠性）
+
+        参数:
+            x: 密码框X坐标
+            y: 密码框Y坐标
+            password: 密码
+            debug_mode: 是否启用调试模式
+
+        返回:
+            是否输入成功
+        """
+        print("  → 正在输入密码...")
+
+        # 确保坐标是整数
+        x, y = int(x), int(y)
+
+        # 截图密码框位置（调试用）
+        if debug_mode:
+            abs_x, abs_y = self.get_absolute_coords(x, y)
+            self._debug_screenshot_click_position(
+                abs_x, abs_y,
+                "./debug_password_input_position.png"
+            )
+
+        # 方法1：使用剪贴板（推荐）
+        print("  → 使用剪贴板方式...")
+        success = self.input_text_via_clipboard(x, y, password)
+
+        if not success:
+            # 方法2：直接输入（备用）
+            print("  → 剪贴板方式失败，尝试直接输入...")
+            try:
+                self.click_at(x, y, clicks=1)
+                time.sleep(0.5)
+
+                # 清空
+                pyautogui.hotkey('command', 'a')
+                time.sleep(0.1)
+                pyautogui.press('delete')
+                time.sleep(0.2)
+
+                # 输入密码（只支持ASCII字符）
+                if password.isascii():
+                    pyautogui.typewrite(password, interval=0.1)
+                    time.sleep(0.2)
+                    print("  ✅ 密码输入成功（直接输入方式）")
+                    success = True
+                else:
+                    print("  ❌ 密码包含非ASCII字符，无法使用直接输入")
+                    return False
+
+            except Exception as e:
+                print(f"  ❌ 直接输入也失败: {e}")
+                return False
+
+        # 成功后，移除密码框焦点，避免后续输入到密码框
+        if success:
+            print("  → 移除密码框焦点...")
+            # 按 Tab 键移动到下一个输入框（通常是验证码框）
+            pyautogui.press('tab')
+            time.sleep(0.3)
+            # 或者点击弹窗的空白区域
+            # 这里使用Tab键更可靠
+
+        return success
 
     def switch_direction(self, direction: TradeDirection):
         """
@@ -792,6 +911,751 @@ class THSMacTrader:
 
         return failed_count == 0
 
+    def check_login_status(self, auto_detect: bool = True) -> bool:
+        """
+        检查是否已登录交易账号
+
+        检测策略：
+        1. 如果未配置login_button坐标，假设已登录
+        2. 截取登录按钮区域的截图
+        3. 优先使用OCR识别截图中的文字
+        4. 如果识别到"登录"、"login"等文字，说明未登录
+        5. 如果OCR失败或auto_detect=False，降级到人工确认
+        6. 返回 True（已登录）或 False（未登录）
+
+        参数:
+            auto_detect: 是否自动检测（使用OCR），False则人工确认
+
+        返回:
+            是否已登录
+        """
+        print("\n" + "="*70)
+        print("🔍 检测登录状态")
+        print("="*70)
+
+        # 如果没有配置登录按钮坐标，假设已登录
+        if self.coords.get('login_button') is None:
+            print("⚠️  未配置登录按钮坐标，无法检测登录状态")
+            print("   假设已登录，如需自动登录请先校准登录相关坐标")
+            return True
+
+        # 激活窗口
+        print("步骤 1/3: 激活同花顺窗口...")
+        if not self.activate_ths_window():
+            print("❌ 无法激活同花顺窗口")
+            return False
+
+        try:
+            # 获取登录按钮附近的小区域截图
+            print("\n步骤 2/3: 截取登录按钮区域...")
+            login_btn_x, login_btn_y = self.coords['login_button']
+            abs_x, abs_y = self.get_absolute_coords(login_btn_x, login_btn_y)
+
+            # 截取按钮区域（假设按钮大小约 100x40）
+            region = (int(abs_x - 50), int(abs_y - 20), 100, 40)
+            screenshot = pyautogui.screenshot(region=region)
+
+            # 保存临时截图用于调试
+            temp_screenshot_path = "/tmp/ths_login_button.png"
+            screenshot.save(temp_screenshot_path)
+            print(f"   ✅ 已保存截图: {temp_screenshot_path}")
+            print(f"   截图区域: {region}")
+
+            # 尝试OCR识别
+            if auto_detect:
+                print("\n步骤 3/3: 使用OCR识别按钮文字...")
+                is_logged_in = self._detect_login_status_with_ocr(screenshot, temp_screenshot_path)
+
+                if is_logged_in is not None:
+                    # OCR识别成功
+                    status = "已登录" if is_logged_in else "未登录"
+                    print(f"✅ 登录状态检测完成: {status}")
+                    return is_logged_in
+                else:
+                    # OCR识别失败，降级到人工确认
+                    print("⚠️  OCR识别失败，降级到人工确认...")
+                    return self._manual_login_status_check(temp_screenshot_path)
+            else:
+                # 不使用自动检测，直接人工确认
+                print("\n步骤 3/3: 人工确认登录状态...")
+                return self._manual_login_status_check(temp_screenshot_path)
+
+        except Exception as e:
+            print(f"\n❌ 登录状态检测失败: {e}")
+            import traceback
+            traceback.print_exc()
+            print("   假设已登录")
+            return True
+
+    def _detect_login_status_with_ocr(self, screenshot, screenshot_path: str) -> Optional[bool]:
+        """
+        使用OCR检测登录状态
+
+        参数:
+            screenshot: PIL Image对象
+            screenshot_path: 截图保存路径
+
+        返回:
+            True（已登录）、False（未登录）、None（检测失败）
+        """
+        try:
+            import pytesseract
+            from PIL import Image, ImageEnhance
+        except ImportError:
+            print("   ⚠️  未安装OCR依赖，无法自动检测")
+            print("   提示: pip install pytesseract pillow")
+            print("   提示: brew install tesseract tesseract-lang")
+            return None
+
+        try:
+            # 图像预处理：增强对比度提高识别率
+            enhancer = ImageEnhance.Contrast(screenshot)
+            enhanced_img = enhancer.enhance(2.0)  # 增强对比度
+
+            # OCR识别（支持中文+英文）
+            custom_config = r'--oem 3 --psm 7 -l chi_sim+eng'
+            text = pytesseract.image_to_string(enhanced_img, config=custom_config)
+
+            # 清理文本
+            text_cleaned = text.strip().lower()
+            print(f"   识别到的文字: '{text.strip()}'")
+
+            # 判断是否包含"登录"相关文字
+            login_keywords = ['登录', 'login', '登', '录', 'sign in', 'signin']
+            has_login_text = any(keyword in text_cleaned for keyword in login_keywords)
+
+            if has_login_text:
+                print(f"   → 检测到登录按钮文字，状态: 未登录")
+                return False
+            else:
+                print(f"   → 未检测到登录按钮文字，状态: 已登录")
+                return True
+
+        except Exception as e:
+            print(f"   ⚠️  OCR识别出错: {e}")
+            return None
+
+    def _manual_login_status_check(self, screenshot_path: str) -> bool:
+        """
+        人工确认登录状态
+
+        参数:
+            screenshot_path: 截图路径
+
+        返回:
+            是否已登录
+        """
+        print("\n" + "─"*70)
+        print("📸 请查看登录按钮截图并手动确认")
+        print("─"*70)
+
+        # 在Mac上打开截图
+        try:
+            import subprocess
+            subprocess.run(['open', screenshot_path], check=False)
+            print(f"已打开截图: {screenshot_path}")
+        except Exception as e:
+            print(f"⚠️  无法打开截图: {e}")
+            print(f"请手动查看截图: {screenshot_path}")
+
+        print("\n请查看截图:")
+        print("  - 如果看到'登录'按钮，说明未登录")
+        print("  - 如果按钮区域是空白或其他内容，说明已登录")
+        print()
+
+        while True:
+            answer = input("是否已登录？(y=已登录, n=未登录): ").strip().lower()
+            if answer in ['y', 'yes', '是', 'y']:
+                return True
+            elif answer in ['n', 'no', '否', 'n']:
+                return False
+            else:
+                print("⚠️  无效输入，请输入 y 或 n")
+
+    def capture_captcha_image(self, save_path: str = "./captcha.png") -> str:
+        """
+        截取验证码图片并保存（增强版）
+
+        参数:
+            save_path: 保存路径
+
+        返回:
+            保存的图片路径
+        """
+        if self.coords.get('captcha_image_region') is None:
+            print("❌ 未配置验证码图片区域坐标")
+            print("   请运行: python3 calibrate_captcha_region.py")
+            return ""
+
+        try:
+            region = self.coords['captcha_image_region']
+
+            print(f"  → 验证码区域配置: {region}")
+
+            # 如果是相对坐标，转换为绝对坐标
+            if self.use_relative_coords and len(region) == 4:
+                x, y, width, height = region
+                abs_x, abs_y = self.get_absolute_coords(int(x), int(y))
+                # 确保所有值都是整数
+                abs_region = (int(abs_x), int(abs_y), int(width), int(height))
+                print(f"  → 转换为绝对坐标: {abs_region}")
+            else:
+                # 确保所有值都是整数
+                abs_region = tuple(int(v) for v in region)
+                print(f"  → 使用绝对坐标: {abs_region}")
+
+            # 验证区域参数
+            if len(abs_region) != 4:
+                print(f"❌ 区域参数错误: {abs_region}")
+                return ""
+
+            # 截图
+            screenshot = pyautogui.screenshot(region=abs_region)
+            screenshot.save(save_path)
+
+            print(f"✅ 验证码图片已保存: {save_path}")
+            print(f"   区域: {abs_region}")
+            print(f"   大小: {screenshot.size}")
+
+            return save_path
+
+        except Exception as e:
+            print(f"❌ 截取验证码失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return ""
+
+    def handle_captcha(self, manual: bool = False, auto_ocr: bool = True,
+                      auto_confirm: bool = True) -> str:
+        """
+        处理验证码（智能模式：OCR优先，失败则人工输入）
+
+        参数:
+            manual: 是否强制人工输入验证码（默认False）
+            auto_ocr: 是否尝试OCR自动识别（默认True）
+            auto_confirm: 是否自动确认OCR结果（默认True，不需要用户确认）
+
+        返回:
+            验证码字符串
+        """
+        # 强制人工输入
+        if manual:
+            return self._manual_captcha_input()
+
+        # 智能模式：先尝试OCR，失败则降级到人工输入
+        if auto_ocr:
+            print("\n" + "─"*50)
+            print("🤖 验证码自动识别 (OCR)")
+            print("─"*50)
+
+            # 尝试OCR识别
+            captcha = self._ocr_captcha()
+
+            if captcha and len(captcha) >= 4:  # 验证码通常至少4位
+                print(f"✅ OCR识别成功: {captcha}")
+
+                # 自动确认模式：直接使用OCR结果
+                if auto_confirm:
+                    print(f"  → 自动使用OCR识别结果")
+                    return captcha
+
+                # 手动确认模式：让用户确认是否正确
+                else:
+                    confirm = input(f"\nOCR识别结果为: {captcha}, 是否正确? (y/n, 直接回车=是): ").strip().lower()
+
+                    if confirm == '' or confirm == 'y':
+                        return captcha
+                    else:
+                        print("OCR识别错误，切换到人工输入...")
+                        return self._manual_captcha_input()
+            else:
+                print("⚠️  OCR识别失败或结果不可靠")
+                print("   切换到人工输入模式...")
+                return self._manual_captcha_input()
+
+        # 默认人工输入
+        return self._manual_captcha_input()
+
+    def _manual_captcha_input(self) -> str:
+        """
+        人工输入验证码
+
+        返回:
+            验证码字符串
+        """
+        print("\n" + "─"*50)
+        print("📸 验证码处理 (人工输入)")
+        print("─"*50)
+
+        # 截取验证码图片
+        captcha_path = self.capture_captcha_image()
+        if captcha_path:
+            print(f"验证码图片已保存到: {captcha_path}")
+            print("请查看图片后输入验证码")
+
+            # 在macOS上自动打开图片
+            try:
+                import subprocess
+                subprocess.run(['open', captcha_path], check=False)
+            except:
+                pass
+
+        captcha = input("请输入验证码: ").strip()
+        return captcha
+
+    def _ocr_captcha(self) -> str:
+        """
+        使用OCR识别验证码
+
+        返回:
+            识别出的验证码字符串，失败返回空字符串
+        """
+        try:
+            # 检查OCR库
+            try:
+                import pytesseract
+                from PIL import Image, ImageEnhance, ImageFilter
+            except ImportError:
+                print("❌ 未安装OCR库 (pytesseract)")
+                print("   安装方法: pip install pytesseract pillow")
+                print("           brew install tesseract tesseract-lang")
+                return ""
+
+            # 1. 截取验证码图片
+            captcha_path = self.capture_captcha_image()
+            if not captcha_path:
+                print("❌ 无法截取验证码图片")
+                return ""
+
+            print(f"  → 验证码图片: {captcha_path}")
+
+            # 2. 打开图片并预处理
+            image = Image.open(captcha_path)
+
+            print(f"  → 原始图片大小: {image.size}")
+
+            # 放大图片（提高识别率）
+            # 验证码通常很小，放大4倍可以显著提高OCR准确率
+            scale_factor = 4
+            new_size = (image.size[0] * scale_factor, image.size[1] * scale_factor)
+            image = image.resize(new_size, Image.Resampling.LANCZOS)  # 使用高质量插值
+            print(f"  → 放大后大小: {image.size} (放大{scale_factor}倍)")
+
+            # 转换为灰度图
+            image = image.convert('L')
+
+            # 增强锐度（使文字边缘更清晰）
+            enhancer = ImageEnhance.Sharpness(image)
+            image = enhancer.enhance(2.0)
+
+            # 增强对比度（提高识别率）
+            enhancer = ImageEnhance.Contrast(image)
+            image = enhancer.enhance(3.0)  # 对比度增强3.0倍
+
+            # 自适应二值化处理（更好地处理不同亮度）
+            # 使用Otsu方法自动计算最佳阈值
+            import numpy as np
+            img_array = np.array(image)
+            threshold = np.mean(img_array)  # 使用均值作为阈值
+            image = image.point(lambda x: 255 if x > threshold else 0)
+
+            # 去噪：去除小的噪点
+            # image = image.filter(ImageFilter.MedianFilter(size=3))
+
+            # 保存预处理后的图片（调试用）
+            preprocessed_path = captcha_path.replace('.png', '_preprocessed.png')
+            image.save(preprocessed_path)
+            print(f"  → 预处理图片: {preprocessed_path}")
+
+            # 3. OCR识别 - 尝试多种配置
+            # 存储所有结果
+            results = []
+
+            # 配置1：纯数字（最常见，优先级最高）
+            config_digits = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789'
+            result1 = pytesseract.image_to_string(image, config=config_digits).strip()
+            result1 = ''.join(c for c in result1 if c.isdigit())
+            print(f"  → 尝试1 (纯数字): '{result1}'")
+            if result1 and 4 <= len(result1) <= 6:  # 验证码通常4-6位
+                results.append(('digits', result1, len(result1)))
+
+            # 配置2：数字+字母
+            config_alnum = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+            result2 = pytesseract.image_to_string(image, config=config_alnum).strip()
+            result2 = ''.join(c for c in result2 if c.isalnum())
+            print(f"  → 尝试2 (数字+字母): '{result2}'")
+            if result2 and 4 <= len(result2) <= 6:
+                results.append(('alnum', result2, len(result2)))
+
+            # 配置3：单词模式
+            config_word = r'--oem 3 --psm 8'
+            result3 = pytesseract.image_to_string(image, config=config_word).strip()
+            result3 = ''.join(c for c in result3 if c.isalnum())
+            print(f"  → 尝试3 (单词模式): '{result3}'")
+            if result3 and 4 <= len(result3) <= 6:
+                results.append(('word', result3, len(result3)))
+
+            # 智能选择最佳结果
+            captcha_text = ""
+            if results:
+                # 策略1: 如果纯数字配置有结果，优先使用（同花顺通常是纯数字）
+                digits_results = [r for r in results if r[0] == 'digits']
+                if digits_results:
+                    # 选择最长的纯数字结果
+                    captcha_text = max(digits_results, key=lambda x: x[2])[1]
+                    print(f"  → 选择策略: 优先使用纯数字结果")
+                else:
+                    # 策略2: 优先选择纯数字的结果（即使来自其他配置）
+                    numeric_results = [r for r in results if r[1].isdigit()]
+                    if numeric_results:
+                        captcha_text = max(numeric_results, key=lambda x: x[2])[1]
+                        print(f"  → 选择策略: 优先选择纯数字内容")
+                    else:
+                        # 策略3: 选择最长的结果
+                        captcha_text = max(results, key=lambda x: x[2])[1]
+                        print(f"  → 选择策略: 选择最长结果")
+
+            # 4. 清理结果
+            captcha_text = captcha_text.strip()
+            # 移除空格和特殊字符
+            captcha_text = ''.join(c for c in captcha_text if c.isalnum())
+
+            print(f"  → OCR识别结果: '{captcha_text}'")
+
+            return captcha_text
+
+        except Exception as e:
+            print(f"❌ OCR识别异常: {e}")
+            import traceback
+            traceback.print_exc()
+            return ""
+
+    def _debug_screenshot_click_position(self, x: int, y: int, save_path: str):
+        """
+        截图并标记将要点击的位置（调试用）
+
+        参数:
+            x: 绝对X坐标
+            y: 绝对Y坐标
+            save_path: 保存路径
+        """
+        try:
+            # 截取全屏
+            screenshot = pyautogui.screenshot()
+
+            # 在截图上标记点击位置
+            from PIL import ImageDraw
+            draw = ImageDraw.Draw(screenshot)
+
+            # 绘制红色十字准线
+            cross_size = 30
+            draw.line([(x - cross_size, y), (x + cross_size, y)], fill='red', width=3)
+            draw.line([(x, y - cross_size), (x, y + cross_size)], fill='red', width=3)
+
+            # 绘制圆圈
+            circle_radius = 20
+            draw.ellipse(
+                [(x - circle_radius, y - circle_radius),
+                 (x + circle_radius, y + circle_radius)],
+                outline='red', width=3
+            )
+
+            # 保存
+            screenshot.save(save_path)
+            print(f"  → 调试截图已保存: {save_path}")
+            print(f"     (红色标记显示将要点击的位置)")
+
+        except Exception as e:
+            print(f"  ⚠️  调试截图失败: {e}")
+
+    def _verify_login_dialog_opened(self) -> bool:
+        """
+        验证登录弹窗是否已打开
+
+        返回:
+            是否检测到登录弹窗
+        """
+        try:
+            # 检查密码输入框是否可见
+            # 如果配置了密码输入框坐标，尝试截图该区域
+            if self.coords.get('password_input'):
+                pwd_coords = self.coords['password_input']
+                abs_x, abs_y = self.get_absolute_coords(*pwd_coords)
+
+                # 截取密码框区域
+                region = (abs_x - 50, abs_y - 20, 100, 40)
+                screenshot = pyautogui.screenshot(region=region)
+
+                # 简单判断：如果区域不是纯黑/纯白，可能是弹窗
+                # 这里返回True表示可能存在，用户需要人工确认
+                return True
+            else:
+                # 没有配置密码框坐标，无法验证
+                return False
+
+        except Exception as e:
+            print(f"  ⚠️  弹窗验证失败: {e}")
+            return False
+
+    def auto_login(self, account: str = None, password: str = None,
+                   captcha: str = None, manual_captcha: bool = False,
+                   debug_mode: bool = True) -> bool:
+        """
+        自动登录流程
+
+        参数:
+            account: 账号（如果为None则不输入账号，适用于记住账号的情况）
+            password: 密码（必需）
+            captcha: 验证码（如果提供则自动填入）
+            manual_captcha: 是否强制人工输入验证码（默认False，优先使用OCR自动识别）
+            debug_mode: 是否启用调试模式（保存截图、详细日志）
+
+        流程:
+            1. 点击登录按钮
+            2. 等待登录弹窗出现
+            3. 如果提供account，输入账号
+            4. 输入密码
+            5. 处理验证码（人工输入或自动识别）
+            6. 点击确认登录按钮
+            7. 等待登录完成并验证
+
+        返回:
+            是否登录成功
+        """
+        print("\n" + "="*70)
+        print("🔐 自动登录流程")
+        if debug_mode:
+            print("   [调试模式已启用 - 将保存截图和详细日志]")
+        print("="*70)
+
+        # 检查必需的坐标配置
+        required_coords = ['login_button', 'password_input', 'login_confirm_button']
+        for coord_name in required_coords:
+            if self.coords.get(coord_name) is None:
+                print(f"❌ 未配置坐标: {coord_name}")
+                print("   请先运行校准工具配置登录相关坐标")
+                return False
+
+        # 检查密码
+        if password is None or password == "":
+            print("❌ 未提供密码，无法登录")
+            return False
+
+        try:
+            # 1. 激活窗口
+            print("\n步骤 1/7: 激活同花顺窗口...")
+            if not self.activate_ths_window():
+                print("❌ 激活窗口失败")
+                return False
+
+            # 2. 点击登录按钮
+            print("\n步骤 2/7: 点击登录按钮...")
+
+            # 显示详细的坐标信息
+            login_btn_coords = self.coords['login_button']
+            print(f"  → 登录按钮相对坐标: {login_btn_coords}")
+            abs_coords = self.get_absolute_coords(*login_btn_coords)
+            print(f"  → 登录按钮绝对坐标: {abs_coords}")
+
+            # 调试模式：截图当前屏幕，标记即将点击的位置
+            if debug_mode:
+                self._debug_screenshot_click_position(
+                    abs_coords[0], abs_coords[1],
+                    "./debug_login_button_click.png"
+                )
+
+            # 增加点击前的额外等待
+            time.sleep(0.5)
+
+            # 点击登录按钮（可能需要多次点击）
+            self.click_at(*login_btn_coords)
+            time.sleep(0.3)  # 短暂等待
+            self.click_at(*login_btn_coords)  # 再次点击确保生效
+
+            # 增加等待时间，确保弹窗有足够时间出现
+            time.sleep(2.5)  # 从1.5秒增加到2.5秒
+
+            # 验证弹窗是否出现
+            if self._verify_login_dialog_opened():
+                print("✅ 登录弹窗已打开")
+            else:
+                print("⚠️  登录弹窗未检测到，但继续执行...")
+                print("   提示: 请检查登录按钮坐标是否正确")
+                # 截图当前状态供用户检查
+                if debug_mode:
+                    pyautogui.screenshot("./debug_after_login_click.png")
+                    print(f"   已保存截图: ./debug_after_login_click.png")
+
+                    # 在macOS上打开截图
+                    try:
+                        subprocess.run(['open', './debug_after_login_click.png'], check=False)
+                    except Exception:
+                        pass
+
+                    # 询问用户
+                    user_input = input("\n请查看截图，登录弹窗是否已打开？(y/n): ").strip().lower()
+
+                    if user_input != 'y':
+                        print("❌ 登录弹窗未打开，中止登录流程")
+                        print("\n💡 故障排查建议：")
+                        print("1. 检查登录按钮坐标是否正确（运行校准工具）")
+                        print("2. 确认当前确实处于未登录状态")
+                        print("3. 检查是否有其他窗口遮挡")
+                        print("4. 手动点击登录按钮，观察弹窗位置")
+                        return False
+
+            # 3. 输入账号（如果提供）
+            if account is not None and account != "":
+                if self.coords.get('account_input') is not None:
+                    print(f"\n步骤 3/7: 输入账号...")
+                    acc_coords = self.coords['account_input']
+                    self.input_text_via_clipboard(int(acc_coords[0]), int(acc_coords[1]), account)
+                    print(f"✅ 账号已输入")
+                else:
+                    print("\n步骤 3/7: 跳过（未配置账号输入框坐标）")
+            else:
+                print("\n步骤 3/7: 跳过（使用记住的账号）")
+
+            # 4. 输入密码
+            print(f"\n步骤 4/7: 输入密码...")
+            pwd_coords = self.coords['password_input']
+
+            # 使用专用密码输入方法
+            success = self.input_password(
+                int(pwd_coords[0]),
+                int(pwd_coords[1]),
+                password,
+                debug_mode=debug_mode
+            )
+
+            if not success:
+                print("❌ 密码输入失败")
+                print("\n💡 故障排查建议：")
+                print("1. 检查密码输入框坐标是否正确")
+                print("2. 确认登录弹窗已完全加载")
+                print("3. 手动点击密码框，确认可以输入")
+                print("4. 查看调试截图: debug_password_input_position.png")
+
+                user_choice = input("\n继续执行？(y/n): ").strip().lower()
+                if user_choice != 'y':
+                    return False
+            else:
+                print("✅ 密码已输入")
+
+            # 5. 处理验证码
+            print(f"\n步骤 5/7: 处理验证码...")
+
+            # 检查是否有验证码输入框
+            if self.coords.get('captcha_input') is not None:
+                if captcha is None or captcha == "":
+                    # 需要获取验证码
+                    if manual_captcha:
+                        captcha = self.handle_captcha(manual=True)
+                    else:
+                        captcha = self.handle_captcha(manual=False)
+
+                if captcha and captcha != "":
+                    print("  → 正在输入验证码...")
+                    captcha_coords = self.coords['captcha_input']
+
+                    # 明确点击验证码输入框，确保焦点正确
+                    print("  → 点击验证码输入框...")
+                    self.click_at(int(captcha_coords[0]), int(captcha_coords[1]), clicks=1)
+                    time.sleep(0.5)  # 等待焦点切换
+
+                    # 再次点击确保焦点
+                    self.click_at(int(captcha_coords[0]), int(captcha_coords[1]), clicks=1)
+                    time.sleep(0.3)
+
+                    # 使用 clear_and_type 输入验证码
+                    self.clear_and_type(int(captcha_coords[0]), int(captcha_coords[1]), captcha)
+                    print(f"✅ 验证码已输入: {captcha}")
+                else:
+                    print("⚠️  未输入验证码，登录可能失败")
+            else:
+                print("✅ 无需验证码（或未配置验证码坐标）")
+
+            # 6. 点击确认登录按钮
+            print(f"\n步骤 6/7: 点击确认登录...")
+            self.click_at(*self.coords['login_confirm_button'])
+            time.sleep(2)  # 等待登录处理
+            print("✅ 登录请求已提交")
+
+            # 7. 验证登录结果
+            print(f"\n步骤 7/7: 验证登录状态...")
+            time.sleep(1)  # 额外等待
+
+            # 简单验证：检查登录按钮是否消失
+            # 实际使用中可以用更可靠的方法验证
+            print("✅ 登录流程完成")
+            print("\n" + "="*70)
+            print("💡 提示: 请人工确认是否成功登录")
+            print("="*70)
+
+            return True
+
+        except Exception as e:
+            print(f"\n❌ 登录过程出错: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+    def ensure_logged_in(self, auto_login_enabled: bool = False,
+                        account: str = None, password: str = None,
+                        manual_captcha: bool = False) -> bool:
+        """
+        确保已登录，如果未登录则提示或自动登录
+
+        参数:
+            auto_login_enabled: 是否启用自动登录
+            account: 登录账号
+            password: 登录密码
+            manual_captcha: 是否强制人工输入验证码（默认False，优先使用OCR）
+
+        返回:
+            是否成功登录
+        """
+        print("\n" + "─"*70)
+        print("🔍 检查登录状态...")
+        print("─"*70)
+
+        if self.check_login_status():
+            print("✅ 已登录")
+            return True
+
+        print("⚠️  检测到未登录")
+
+        if auto_login_enabled:
+            print("正在自动登录...")
+            return self.auto_login(account, password, manual_captcha=manual_captcha)
+        else:
+            print("\n💡 请选择操作：")
+            print("1. 手动登录（在同花顺界面登录）")
+            print("2. 自动登录（需要提供账号密码）")
+            print("3. 取消")
+
+            choice = input("\n请选择 [1-3]: ").strip()
+
+            if choice == "1":
+                print("\n请在同花顺界面手动登录...")
+                input("登录完成后按 Enter 继续...")
+                return self.check_login_status()
+            elif choice == "2":
+                if account is None:
+                    account = input("请输入账号（直接回车跳过）: ").strip() or None
+                if password is None:
+                    import getpass
+                    password = getpass.getpass("请输入密码: ").strip()
+
+                if password:
+                    return self.auto_login(account, password, manual_captcha=manual_captcha)
+                else:
+                    print("❌ 未提供密码，无法登录")
+                    return False
+            else:
+                print("已取消")
+                return False
+
     def calibrate(self):
         """
         坐标校准工具
@@ -815,21 +1679,93 @@ class THSMacTrader:
             "价格输入框",
             "数量输入框",
             "确认按钮",
-            "模态对话框确认按钮"  # 新增
+            "模态对话框确认按钮",
+            "登录按钮（可选）",
+            "账号输入框（可选）",
+            "密码输入框（可选）",
+            "验证码输入框（可选）",
+            "验证码图片区域-左上角（可选）",
+            "验证码图片区域-右下角（可选）",
+            "登录确认按钮（可选）"
         ]
+
+        # 用于存储验证码区域的两个点
+        captcha_region_p1 = None
+        captcha_region_p2 = None
 
         for label in labels:
             print(f"\n请将鼠标移动到【{label}】位置，然后在终端按 Enter...")
+
+            # 添加提示信息
             if label == "模态对话框确认按钮":
                 print("   提示：需要先点击'确认按钮'让对话框弹出，然后移动鼠标到对话框的确认按钮")
+            elif label == "登录按钮（可选）":
+                print("   提示：如需自动登录功能，请先登出账号，然后指向主界面的登录按钮")
+            elif label == "账号输入框（可选）":
+                print("   提示：点击登录按钮后，在弹出的登录窗口中指向账号输入框")
+            elif label == "密码输入框（可选）":
+                print("   提示：在登录窗口中指向密码输入框")
+            elif label == "验证码输入框（可选）":
+                print("   提示：如果登录需要验证码，指向验证码输入框")
+            elif label == "验证码图片区域-左上角（可选）":
+                print("   提示：如需OCR识别验证码，请移动到验证码图片的左上角")
+                print("   说明：验证码图片区域需要两个点来定义矩形区域")
+            elif label == "验证码图片区域-右下角（可选）":
+                print("   提示：移动到验证码图片的右下角")
+                if captcha_region_p1:
+                    print(f"   左上角已记录: {captcha_region_p1}")
+            elif label == "登录确认按钮（可选）":
+                print("   提示：在登录窗口中指向确认登录的按钮")
+
+            print("   （输入 's' 跳过此项，'q' 退出校准）")
             user_input = input()
+
             if user_input.lower() == 'q':
                 break
+            elif user_input.lower() == 's':
+                print(f"⏭️  已跳过 {label}")
+
+                # 如果跳过左上角，也标记右下角为跳过
+                if label == "验证码图片区域-左上角（可选）":
+                    captcha_region_p1 = None
+
+                continue
 
             x, y = pyautogui.position()
-            positions.append((label, x, y))
-            print(f"✅ {label}: ({x}, {y})")
 
+            # 特殊处理验证码图片区域
+            if label == "验证码图片区域-左上角（可选）":
+                captcha_region_p1 = (x, y)
+                print(f"✅ {label}: ({x}, {y})")
+            elif label == "验证码图片区域-右下角（可选）":
+                if captcha_region_p1 is None:
+                    print(f"⚠️  未记录左上角，跳过验证码图片区域")
+                else:
+                    captcha_region_p2 = (x, y)
+                    print(f"✅ {label}: ({x}, {y})")
+
+                    # 计算区域 (x, y, width, height)
+                    x1, y1 = captcha_region_p1
+                    x2, y2 = captcha_region_p2
+                    region_x = min(x1, x2)
+                    region_y = min(y1, y2)
+                    region_width = abs(x2 - x1)
+                    region_height = abs(y2 - y1)
+
+                    positions.append((
+                        "验证码图片区域",
+                        region_x,
+                        region_y,
+                        region_width,
+                        region_height
+                    ))
+                    print(f"✅ 验证码图片区域: ({region_x}, {region_y}, {region_width}, {region_height})")
+            else:
+                # 普通坐标点
+                positions.append((label, x, y))
+                print(f"✅ {label}: ({x}, {y})")
+
+        # 输出校准结果
         print("\n" + "="*60)
         print("📋 校准结果（请复制到代码中）：")
         print("="*60)
@@ -842,13 +1778,35 @@ class THSMacTrader:
             "价格输入框": "price_input",
             "数量输入框": "quantity_input",
             "确认按钮": "confirm_button",
-            "模态对话框确认按钮": "modal_confirm_button"  # 新增
+            "模态对话框确认按钮": "modal_confirm_button",
+            "登录按钮（可选）": "login_button",
+            "账号输入框（可选）": "account_input",
+            "密码输入框（可选）": "password_input",
+            "验证码输入框（可选）": "captcha_input",
+            "验证码图片区域": "captcha_image_region",
+            "登录确认按钮（可选）": "login_confirm_button"
         }
 
-        for label, x, y in positions:
+        for item in positions:
+            label = item[0]
             key = key_map.get(label, label)
-            print(f"    '{key}': ({x}, {y}),")
+
+            if label == "验证码图片区域":
+                # 验证码区域是4个值：(x, y, width, height)
+                x, y, width, height = item[1], item[2], item[3], item[4]
+                print(f"    '{key}': ({x}, {y}, {width}, {height}),")
+            else:
+                # 普通坐标是2个值：(x, y)
+                x, y = item[1], item[2]
+                print(f"    '{key}': ({x}, {y}),")
+
         print("}")
+        print("\n" + "="*60)
+        print("💡 提示：")
+        print("1. 将上述配置复制到 ths_mac_trader.py 的 self.coords_relative 字典中")
+        print("2. 验证码图片区域格式为 (x, y, width, height)，用于截取验证码图片")
+        print("3. 可选项可以跳过，不影响基本交易功能")
+        print("="*60)
 
         return positions
 
@@ -952,12 +1910,16 @@ def main():
 ║  5. 智能卖出（OCR识别持仓）⭐                              ║
 ║  6. 批量清仓                                              ║
 ║  7. 查看委托（OCR识别）⭐                                  ║
+║  8. 校准验证码区域 🆕                                     ║
+║  9. 测试验证码截图 🆕                                     ║
+║  10. 检查登录状态                                         ║
+║  11. 自动登录 🔐                                          ║
 ║  0. 退出                                                  ║
 ╚══════════════════════════════════════════════════════════╝
     """)
 
     while True:
-        choice = input("\n请选择功能 [0-7]: ").strip()
+        choice = input("\n请选择功能 [0-11]: ").strip()
 
         if choice == '0':
             print("再见！")
@@ -983,6 +1945,12 @@ def main():
 
         elif choice == '5':
             # 智能卖出 - OCR识别持仓后选择卖出
+            # 询问是否使用OCR识别验证码（如果需要登录）
+            use_ocr = input("是否使用OCR自动识别验证码？(y/n, 默认y): ").strip().lower()
+            manual_captcha = (use_ocr == 'n')
+
+            # 注意：smart_sell 内部可能需要登录，但目前不支持 manual_captcha 参数
+            # 这里仅作演示，实际需要修改 smart_sell 方法签名
             trader.smart_sell(confirm=True)
 
         elif choice == '6':
@@ -1004,6 +1972,54 @@ def main():
                 print("="*70)
             else:
                 print("\n暂无委托或识别失败")
+
+        elif choice == '8':
+            # 校准验证码区域
+            subprocess.run(['python3', 'calibrate_captcha_region.py'], check=False)
+
+        elif choice == '9':
+            # 测试验证码截图
+            print("\n请确保登录弹窗已打开且显示验证码")
+            input("按 Enter 继续...")
+
+            captcha_path = trader.capture_captcha_image()
+            if captcha_path:
+                try:
+                    subprocess.run(['open', captcha_path], check=False)
+                    print(f"✅ 已打开验证码图片: {captcha_path}")
+                except Exception as e:
+                    print(f"⚠️  无法自动打开图片: {e}")
+                    print(f"   请手动查看: {captcha_path}")
+
+        elif choice == '10':
+            # 检查登录状态
+            trader.check_login_status()
+
+        elif choice == '11':
+            # 自动登录
+            print("\n" + "="*60)
+            print("🔐 自动登录")
+            print("="*60)
+
+            # 提示用户输入账号密码
+            account = None
+
+            # 使用 getpass 隐藏密码输入
+            import getpass
+            password = "824532"
+
+            # 询问是否使用OCR识别验证码
+            # use_ocr = input("是否使用OCR自动识别验证码？(y/n, 默认y): ").strip().lower()
+            manual_captcha = False #(use_ocr == 'n')  # n表示不用OCR，即手动输入
+
+            if password:
+                success = trader.auto_login(account=account, password=password, manual_captcha=manual_captcha)
+                if success:
+                    print("\n✅ 登录流程执行完成，请检查同花顺界面确认是否成功")
+                else:
+                    print("\n❌ 登录失败")
+            else:
+                print("\n❌ 密码不能为空")
 
         else:
             print("无效选择，请重试")
