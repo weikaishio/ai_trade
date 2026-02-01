@@ -10,9 +10,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from market_data_client import StockData
-from model_client import ModelScore
-from config_quant import (
+from .market_data_client import StockData
+from .model_client import ModelScore
+from .config_quant import (
     SCORE_THRESHOLDS,
     STOP_LOSS,
     STOP_PROFIT,

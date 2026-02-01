@@ -12,8 +12,8 @@ from datetime import datetime, date, timedelta
 from pathlib import Path
 from enum import Enum
 
-from decision_engine import TradeSignal, Position, TradeAction, Priority
-from config_quant import (
+from .decision_engine import TradeSignal, Position, TradeAction, Priority
+from .config_quant import (
     MAX_DAILY_TRADES,
     MAX_POSITION_RATIO,
     MIN_TRADE_INTERVAL,

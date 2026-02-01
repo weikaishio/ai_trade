@@ -14,7 +14,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from config_quant import (
+from .config_quant import (
     TENCENT_STOCK_API_URL,
     STOCK_API_TIMEOUT,
     STOCK_API_RETRY,
@@ -326,17 +326,45 @@ class MarketDataClient:
                 logger.warning(f"{code} 数据字段不完整: {len(fields)} 字段")
                 return None
 
-            # 解析各字段
+            # 解析基础字段
             name = fields[1]
             current_price = float(fields[3]) if fields[3] else 0.0
-            change_amount = float(fields[4]) if fields[4] else 0.0
-            change_percent = float(fields[5]) if fields[5] else 0.0
+            previous_close = float(fields[4]) if fields[4] else 0.0
+            open_price = float(fields[5]) if fields[5] else 0.0
             volume = int(fields[6]) if fields[6] else 0
-            turnover = float(fields[7]) if fields[7] else 0.0
-            highest = float(fields[33]) if fields[33] else current_price  # 字段33是最高价
-            lowest = float(fields[34]) if fields[34] else current_price   # 字段34是最低价
-            open_price = float(fields[5]) if len(fields) > 5 and fields[5] else current_price
-            previous_close = float(fields[4]) if len(fields) > 4 and fields[4] else current_price
+            outer_disc = int(fields[7]) if fields[7] else 0  # 外盘
+            inner_disc = int(fields[8]) if fields[8] else 0  # 内盘
+
+            # 解析买卖盘数据（买卖五档）
+            bid_prices = []
+            bid_volumes = []
+            ask_prices = []
+            ask_volumes = []
+
+            # 买盘数据 (索引 9-18: 买一价、买一量、买二价、买二量...)
+            for i in range(9, 19, 2):
+                if i < len(fields) and i+1 < len(fields):
+                    bid_prices.append(float(fields[i]) if fields[i] else 0.0)
+                    bid_volumes.append(int(fields[i+1]) if fields[i+1] else 0)
+
+            # 卖盘数据 (索引 19-28: 卖一价、卖一量、卖二价、卖二量...)
+            for i in range(19, 29, 2):
+                if i < len(fields) and i+1 < len(fields):
+                    ask_prices.append(float(fields[i]) if fields[i] else 0.0)
+                    ask_volumes.append(int(fields[i+1]) if fields[i+1] else 0)
+
+            # 解析价格和涨跌数据
+            change_amount = float(fields[31]) if len(fields) > 31 and fields[31] else 0.0
+            change_percent = float(fields[32]) if len(fields) > 32 and fields[32] else 0.0
+            highest = float(fields[33]) if len(fields) > 33 and fields[33] else current_price
+            lowest = float(fields[34]) if len(fields) > 34 and fields[34] else current_price
+            turnover = float(fields[37]) if len(fields) > 37 and fields[37] else 0.0
+
+            # 解析扩展数据
+            turnover_rate = float(fields[38]) if len(fields) > 38 and fields[38] else 0.0
+            pe_ratio = float(fields[39]) if len(fields) > 39 and fields[39] else 0.0
+            total_market_cap = float(fields[45]) if len(fields) > 45 and fields[45] else 0.0
+            circulation_market_cap = float(fields[44]) if len(fields) > 44 and fields[44] else 0.0
 
             # 创建StockData对象
             stock_data = StockData(
@@ -351,7 +379,19 @@ class MarketDataClient:
                 lowest=lowest,
                 open_price=open_price,
                 previous_close=previous_close,
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
+                # 盘口数据
+                bid_prices=bid_prices,
+                bid_volumes=bid_volumes,
+                ask_prices=ask_prices,
+                ask_volumes=ask_volumes,
+                outer_disc=outer_disc,
+                inner_disc=inner_disc,
+                # 扩展数据
+                pe_ratio=pe_ratio,
+                total_market_cap=total_market_cap,
+                circulation_market_cap=circulation_market_cap,
+                turnover_rate=turnover_rate
             )
 
             return stock_data

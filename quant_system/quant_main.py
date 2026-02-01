@@ -22,26 +22,48 @@ parent_dir = current_dir.parent
 sys.path.insert(0, str(current_dir))  # 优先从quant_system导入
 sys.path.insert(1, str(parent_dir))   # 然后从父目录导入ths_mac_trader
 
-from market_data_client import MarketDataClient
-from model_client import ModelClient
-from decision_engine import DecisionEngine, Position, TradeSignal
-from risk_manager import RiskManager
-from config_quant import (
-    AUTO_CHECK_INTERVAL,
-    POSITION_REFRESH_INTERVAL,
-    TEST_MODE,
-    DRY_RUN,
-    MOCK_DATA_ENABLED,
-    MOCK_POSITIONS,
-    is_trading_time
-)
+# 支持两种导入方式：作为脚本运行和作为包导入
+try:
+    # 尝试相对导入（作为包运行时）
+    from .market_data_client import MarketDataClient
+    from .model_client import ModelClient
+    from .decision_engine import DecisionEngine, Position, TradeSignal
+    from .risk_manager import RiskManager
+    from .config_quant import (
+        AUTO_CHECK_INTERVAL,
+        POSITION_REFRESH_INTERVAL,
+        TEST_MODE,
+        DRY_RUN,
+        MOCK_DATA_ENABLED,
+        MOCK_POSITIONS,
+        is_trading_time
+    )
+except ImportError:
+    # 使用绝对导入（作为脚本直接运行时）
+    from market_data_client import MarketDataClient
+    from model_client import ModelClient
+    from decision_engine import DecisionEngine, Position, TradeSignal
+    from risk_manager import RiskManager
+    from config_quant import (
+        AUTO_CHECK_INTERVAL,
+        POSITION_REFRESH_INTERVAL,
+        TEST_MODE,
+        DRY_RUN,
+        MOCK_DATA_ENABLED,
+        MOCK_POSITIONS,
+        is_trading_time
+    )
 
 # 配置日志
+log_dir = current_dir / "logs"
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / "quant_system.log"
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("logs/quant_system.log"),
+        logging.FileHandler(str(log_file)),
         logging.StreamHandler()
     ]
 )
@@ -77,9 +99,11 @@ class QuantTradingSystem:
         self.market_client = MarketDataClient()
         self.model_client = ModelClient()
         self.decision_engine = DecisionEngine()
-        self.risk_manager = RiskManager(
-            data_dir=str(Path(__file__).parent / "data" / "risk")
-        )
+
+        # 确保数据目录存在
+        risk_data_dir = current_dir / "data" / "risk"
+        risk_data_dir.mkdir(parents=True, exist_ok=True)
+        self.risk_manager = RiskManager(data_dir=str(risk_data_dir))
 
         # 尝试导入交易客户端
         try:

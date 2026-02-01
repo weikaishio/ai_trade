@@ -13,7 +13,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from config_quant import (
+from .config_quant import (
     MODEL_API_URL,
     MODEL_API_TIMEOUT,
     MODEL_API_RETRY,
