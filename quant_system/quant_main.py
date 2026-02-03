@@ -39,6 +39,8 @@ try:
         AUTOMATION_MODE,
         AUTO_OCR_ENABLED,
         AUTO_TRADING_ENABLED,
+        PREPARE_BEFORE_TRADING,
+        PREPARE_CHECK_INTERVAL,
         is_trading_time
     )
 except ImportError:
@@ -57,6 +59,8 @@ except ImportError:
         AUTOMATION_MODE,
         AUTO_OCR_ENABLED,
         AUTO_TRADING_ENABLED,
+        PREPARE_BEFORE_TRADING,
+        PREPARE_CHECK_INTERVAL,
         is_trading_time
     )
 
@@ -133,6 +137,11 @@ class QuantTradingSystem:
             self.ocr_available = False
             logger.warning("OCR模块未找到，需要手动输入持仓")
 
+        # 缓存变量
+        self.last_positions = None  # 缓存的持仓信息
+        self.last_position_update = None  # 最后更新时间
+        self.last_prepare_check = None  # 最后系统准备检查时间
+
         logger.info("系统初始化完成")
 
         # 设置信号处理器
@@ -153,6 +162,84 @@ class QuantTradingSystem:
         """停止系统"""
         logger.info("停止量化交易系统...")
         self.running = False
+
+    def prepare_trading_system(self) -> bool:
+        """
+        准备交易系统状态
+
+        执行以下操作：
+        1. 确保同花顺窗口激活
+        2. 检测并自动登录（如果配置启用）
+        3. 切换到交易Tab
+        4. 获取当前持仓
+
+        无论是否交易时间都会执行
+        在非交易时间提前准备，交易时间立即可用
+
+        Returns:
+            bool: 准备是否成功
+        """
+        logger.info("=" * 60)
+        logger.info("开始准备交易系统状态")
+        logger.info("=" * 60)
+
+        try:
+            # 1. 确保系统就绪（自动登录、切换Tab等）
+            if self.trader_available and self.trader:
+                logger.info("检查系统就绪状态...")
+                try:
+                    # 检查 trader 是否有 ensure_ready_for_trading 方法
+                    if hasattr(self.trader, 'ensure_ready_for_trading'):
+                        if self.trader.ensure_ready_for_trading():
+                            logger.info("✅ 系统就绪检查完成")
+                        else:
+                            logger.warning("⚠️ 系统就绪检查失败，但继续运行")
+                    else:
+                        # 如果没有该方法，尝试基本的窗口激活
+                        logger.info("执行基本窗口激活...")
+                        if hasattr(self.trader, 'activate_ths_window'):
+                            if self.trader.activate_ths_window():
+                                logger.info("✅ 窗口激活成功")
+                            else:
+                                logger.warning("⚠️ 窗口激活失败")
+                except Exception as e:
+                    logger.warning(f"系统就绪检查异常: {e}")
+            else:
+                logger.warning("交易客户端不可用，跳过系统就绪检查")
+
+            # 2. 获取当前持仓
+            logger.info("获取当前持仓信息...")
+            positions = self.get_positions()
+
+            if positions:
+                logger.info(f"✅ 成功获取持仓: {len(positions)} 个")
+                for pos in positions:
+                    # 兼容两种Position类的字段名
+                    stock_name = getattr(pos, 'name', getattr(pos, 'stock_name', '未知'))
+                    stock_code = getattr(pos, 'code', getattr(pos, 'stock_code', '000000'))
+                    quantity = getattr(pos, 'quantity', getattr(pos, 'available_qty', 0))
+                    cost_price = getattr(pos, 'cost_price', getattr(pos, 'current_price', 0.0))
+
+                    logger.info(f"   - {stock_name} ({stock_code}): {quantity}股 @{cost_price:.2f}元")
+            else:
+                logger.info("当前无持仓或获取失败")
+
+            # 3. 缓存持仓信息
+            self.last_positions = positions
+            self.last_position_update = datetime.now()
+            self.last_prepare_check = datetime.now()
+
+            logger.info("=" * 60)
+            logger.info("✅ 交易系统准备完成")
+            logger.info("=" * 60)
+
+            return True
+
+        except Exception as e:
+            logger.error(f"准备交易系统时出错: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
 
     def _check_critical_risk(self) -> bool:
         """
@@ -466,14 +553,45 @@ class QuantTradingSystem:
 
         positions = None
         last_refresh = None
+        first_run = True  # 首次运行标志
 
         try:
             while self.running:
+                current_time = datetime.now()
+
                 # 检查交易时间
                 if not is_trading_time():
-                    logger.info("非交易时间，等待中...")
+                    # 非交易时间的系统准备逻辑
+                    if PREPARE_BEFORE_TRADING:
+                        should_prepare = False
+
+                        # 首次运行时准备系统
+                        if first_run:
+                            logger.info("非交易时间，提前准备系统状态...")
+                            should_prepare = True
+                            first_run = False
+                        # 定期检查系统状态
+                        elif self.last_prepare_check is None or \
+                             (current_time - self.last_prepare_check).total_seconds() >= PREPARE_CHECK_INTERVAL:
+                            logger.info("定时检查系统状态...")
+                            should_prepare = True
+
+                        if should_prepare:
+                            self.prepare_trading_system()
+                        else:
+                            logger.info("非交易时间，等待中...")
+                    else:
+                        logger.info("非交易时间，等待中...")
+
                     time.sleep(60)  # 非交易时间每分钟检查一次
                     continue
+
+                # 交易时间逻辑
+                # 如果刚进入交易时间，再次确认系统状态
+                if first_run or (self.last_prepare_check is None):
+                    logger.info("进入交易时间，最终确认系统状态...")
+                    self.prepare_trading_system()
+                    first_run = False
 
                 # 检查严重风险
                 if self._check_critical_risk():
@@ -483,7 +601,6 @@ class QuantTradingSystem:
                     break
 
                 # 刷新持仓数据
-                current_time = datetime.now()
                 if last_refresh is None or \
                    (current_time - last_refresh).total_seconds() >= POSITION_REFRESH_INTERVAL:
                     logger.info("刷新持仓数据...")

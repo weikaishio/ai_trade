@@ -93,6 +93,10 @@ AUTO_OCR_ENABLED = True  # True: 自动使用OCR识别持仓
 AUTO_TRADING_ENABLED = True  # True: 自动执行交易（生产环境谨慎启用）
 AUTO_LOGIN_IF_NEEDED = True  # True: 需要时自动登录
 
+# 非交易时间准备设置
+PREPARE_BEFORE_TRADING = True  # 非交易时间是否准备系统（检查登录、获取持仓等）
+PREPARE_CHECK_INTERVAL = 3600  # 准备检查间隔（秒，默认1小时）
+
 # 日志配置
 LOG_LEVEL = "INFO"
 LOG_FILE = "logs/quant_system.log"

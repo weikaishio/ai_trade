@@ -103,10 +103,10 @@ class THSMacTrader:
             # 登录相关坐标（需要校准）
             'captcha_image_region': (1144, 620, 62, 21),
 
-            'login_button': (138, 238),
-            'password_input': (1108, 562),
-            'captcha_input': (1109, 653),
-            'login_confirm_button': (1120, 680),
+            'login_button': (178, 265),
+            'password_input': (1108, 578),
+            'captcha_input': (1109, 670),
+            'login_confirm_button': (1120, 700),
 
             # 状态检测相关坐标（用于自动恢复功能）
             # Tab相关
@@ -115,7 +115,7 @@ class THSMacTrader:
 
             # 弹窗相关
             'popup_region': (923, 470, 254, 236),        # 弹窗内容区域（窗口中央）
-            'popup_confirm_button': (974, 676),          # 弹窗确定按钮位置
+            'popup_confirm_button': (975, 656),          # 弹窗确定按钮位置
 
         }
 
@@ -143,6 +143,44 @@ class THSMacTrader:
 
         # 是否使用相对坐标模式（推荐）
         self.use_relative_coords = True
+
+    def get_ths_process_name(self) -> str:
+        """
+        获取同花顺进程的正确名称（支持多种可能的名称）
+
+        返回:
+            str: 找到的进程名称，如果都未找到则返回默认的"同花顺"
+        """
+        possible_names = [
+            "同花顺",
+            "同花顺Mac",
+            "同花顺证券",
+            "THS",
+            "同花顺-Mac",
+            "同花顺mac版",
+        ]
+
+        for name in possible_names:
+            script = f'''
+            tell application "System Events"
+                return exists process "{name}"
+            end tell
+            '''
+            try:
+                result = subprocess.run(
+                    ['osascript', '-e', script],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.stdout.strip() == "true":
+                    print(f"  ✅ 找到进程: {name}")
+                    return name
+            except:
+                continue
+
+        print("  ⚠️  未找到同花顺进程（使用默认名称）")
+        return "同花顺"  # 默认值
 
     def activate_ths_window(self) -> bool:
         """
@@ -175,26 +213,85 @@ class THSMacTrader:
         获取同花顺窗口位置和大小
         返回：(x, y, width, height) 或 None
         """
+        # 使用更健壮的窗口获取方法：先获取所有窗口，再选择主窗口
+        # 这样即使有弹窗也不会失败
         script = f'''
         tell application "System Events"
             tell process "{self.app_name}"
-                set frontWindow to front window
-                set windowPosition to position of frontWindow
-                set windowSize to size of frontWindow
-                return {{item 1 of windowPosition, item 2 of windowPosition, item 1 of windowSize, item 2 of windowSize}}
+                set windowList to every window
+                if (count of windowList) > 0 then
+                    -- 找最大的窗口（通常是主窗口）
+                    set maxArea to 0
+                    set mainWindow to item 1 of windowList
+                    repeat with w in windowList
+                        set wSize to size of w
+                        set wArea to (item 1 of wSize) * (item 2 of wSize)
+                        if wArea > maxArea then
+                            set maxArea to wArea
+                            set mainWindow to w
+                        end if
+                    end repeat
+
+                    set windowPosition to position of mainWindow
+                    set windowSize to size of mainWindow
+                    return {{item 1 of windowPosition, item 2 of windowPosition, item 1 of windowSize, item 2 of windowSize}}
+                else
+                    error "没有找到窗口"
+                end if
             end tell
         end tell
         '''
         try:
             result = subprocess.run(
                 ['osascript', '-e', script],
-                check=True, capture_output=True, text=True
+                check=True, capture_output=True, text=True,
+                timeout=5
             )
             # 解析返回的坐标
             coords = result.stdout.strip().split(', ')
             return tuple(int(c) for c in coords)
+        except subprocess.CalledProcessError as e:
+            # AppleScript执行错误，输出详细错误信息
+            error_msg = e.stderr if e.stderr else "未知错误"
+            print(f"  ❌ AppleScript执行失败: {error_msg}")
+
+            # 检查进程是否存在
+            check_script = f'''
+            tell application "System Events"
+                set processList to name of every process
+                return processList contains "{self.app_name}"
+            end tell
+            '''
+            try:
+                check_result = subprocess.run(
+                    ['osascript', '-e', check_script],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                process_exists = check_result.stdout.strip()
+                print(f"  → 进程 '{self.app_name}' 是否存在: {process_exists}")
+
+                if process_exists == "false":
+                    print(f"  💡 提示: 进程名称可能不正确，尝试使用 get_ths_process_name() 方法")
+                    # 尝试自动检测进程名称
+                    detected_name = self.get_ths_process_name()
+                    if detected_name != self.app_name:
+                        print(f"  🔄 自动切换进程名称: {self.app_name} -> {detected_name}")
+                        self.app_name = detected_name
+                        # 重试一次
+                        return self.get_window_position()
+            except Exception as check_error:
+                print(f"  → 进程检查失败: {check_error}")
+
+            return None
+        except subprocess.TimeoutExpired:
+            print(f"  ❌ AppleScript执行超时（可能进程无响应）")
+            return None
         except Exception as e:
-            print(f"获取窗口位置失败: {e}")
+            print(f"  ❌ 获取窗口位置失败: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def get_absolute_coords(self, relative_x: int, relative_y: int) -> Tuple[int, int]:
@@ -966,7 +1063,7 @@ class THSMacTrader:
             abs_x, abs_y = self.get_absolute_coords(login_btn_x, login_btn_y)
 
             # 截取按钮区域（假设按钮大小约 100x40）
-            region = (int(abs_x - 50), int(abs_y - 20), 100, 40)
+            region = (int(abs_x - 50), int(abs_y - 20), 150, 50)
             screenshot = pyautogui.screenshot(region=region)
 
             # 保存临时截图用于调试
@@ -1001,9 +1098,114 @@ class THSMacTrader:
             print("   假设已登录")
             return True
 
+    def _detect_login_button_by_color(self, screenshot) -> Optional[bool]:
+        """
+        通过颜色检测登录按钮（PRIMARY METHOD - 最可靠）
+
+        原理：
+        - 蓝色"立即登录"按钮 = 未登录
+        - 灰色/无明显蓝色按钮 = 已登录
+
+        参数:
+            screenshot: PIL Image对象
+
+        返回:
+            True（已登录）、False（未登录）、None（检测失败）
+        """
+        try:
+            import numpy as np
+        except ImportError:
+            # numpy未安装，静默返回None
+            return None
+
+        try:
+            # Convert to numpy array
+            img_array = np.array(screenshot.convert('RGB'))
+
+            # 定义蓝色按钮的颜色范围（RGB）
+            # 同花顺"立即登录"按钮的典型蓝色约为: RGB(23, 113, 230)
+            # 使用较宽的范围以容忍亮度变化
+            blue_lower = np.array([10, 90, 200])   # 深蓝
+            blue_upper = np.array([50, 140, 255])  # 浅蓝
+
+            # 创建蓝色像素掩码
+            mask = np.all((img_array >= blue_lower) & (img_array <= blue_upper), axis=-1)
+
+            # 计算蓝色像素占比
+            blue_percentage = np.sum(mask) / mask.size
+
+            print(f"   蓝色像素占比: {blue_percentage:.2%}")
+
+            # 如果超过30%的像素是蓝色，说明有登录按钮
+            if blue_percentage > 0.30:
+                print(f"   ✓ 检测到蓝色登录按钮，状态: 未登录")
+                return False
+            else:
+                print(f"   ✓ 未检测到蓝色按钮，状态: 已登录")
+                return True
+
+        except Exception as e:
+            print(f"   ⚠️  颜色检测失败: {e}")
+            return None
+
+    def _detect_login_by_template(self, screenshot_path: str) -> Optional[bool]:
+        """
+        使用OpenCV模板匹配检测登录按钮（SECONDARY METHOD）
+
+        需要预先保存一个登录按钮模板图片到 templates/login_button.png
+
+        参数:
+            screenshot_path: 截图保存路径
+
+        返回:
+            True（已登录）、False（未登录）、None（检测失败或模板不存在）
+        """
+        try:
+            import cv2
+            import numpy as np
+        except ImportError:
+            # OpenCV是可选依赖，不打印警告
+            return None
+
+        try:
+            # 模板路径
+            template_path = os.path.join(os.path.dirname(__file__), 'templates', 'login_button.png')
+
+            if not os.path.exists(template_path):
+                # 模板不存在，静默返回None
+                return None
+
+            # 读取截图和模板
+            img = cv2.imread(screenshot_path)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            template = cv2.imread(template_path, 0)
+
+            # 模板匹配
+            result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+            print(f"   模板匹配相似度: {max_val:.2f}")
+
+            # 相似度阈值 70%
+            if max_val > 0.7:
+                print(f"   ✓ 检测到登录按钮，状态: 未登录")
+                return False
+            else:
+                print(f"   ✓ 未检测到登录按钮，状态: 已登录")
+                return True
+
+        except Exception as e:
+            print(f"   ⚠️  模板匹配失败: {e}")
+            return None
+
     def _detect_login_status_with_ocr(self, screenshot, screenshot_path: str) -> Optional[bool]:
         """
-        使用OCR检测登录状态
+        使用多种方法检测登录状态（CASCADE APPROACH）
+
+        优先级顺序：
+        1. 颜色检测（最快最可靠） - PRIMARY
+        2. 模板匹配（需要OpenCV）- SECONDARY
+        3. OCR识别（最后手段）- FALLBACK
 
         参数:
             screenshot: PIL Image对象
@@ -1012,9 +1214,28 @@ class THSMacTrader:
         返回:
             True（已登录）、False（未登录）、None（检测失败）
         """
+        print(f"   使用多方法级联检测...")
+
+        # ====== 方法1: 颜色检测（PRIMARY - 最可靠）======
+        print(f"\n   → 方法1: 颜色检测...")
+        color_result = self._detect_login_button_by_color(screenshot)
+        if color_result is not None:
+            print(f"   ✅ 颜色检测成功")
+            return color_result
+
+        # ====== 方法2: 模板匹配（SECONDARY）======
+        print(f"\n   → 方法2: 模板匹配...")
+        template_result = self._detect_login_by_template(screenshot_path)
+        if template_result is not None:
+            print(f"   ✅ 模板匹配成功")
+            return template_result
+
+        # ====== 方法3: OCR识别（FALLBACK）======
+        print(f"\n   → 方法3: OCR识别...")
+
         try:
             import pytesseract
-            from PIL import Image, ImageEnhance
+            from PIL import Image, ImageEnhance, ImageOps
         except ImportError:
             print("   ⚠️  未安装OCR依赖，无法自动检测")
             print("   提示: pip install pytesseract pillow")
@@ -1022,31 +1243,177 @@ class THSMacTrader:
             return None
 
         try:
-            # 图像预处理：增强对比度提高识别率
-            enhancer = ImageEnhance.Contrast(screenshot)
-            enhanced_img = enhancer.enhance(2.0)  # 增强对比度
+            # 登录关键词（扩展版 + 常见OCR误识别）
+            login_keywords = [
+                # 完整词组
+                '登录', '登陆', '立即登录', '立即登陆',
+                'login', 'sign in', 'signin', 'log in',
+                # 单字（可能只识别出部分）
+                '登', '录', '陆', '即',
+                # 常见OCR错误识别
+                '党录', '党陆', '一一', '立党',  # "立即"的误识别
+            ]
 
-            # OCR识别（支持中文+英文）
-            custom_config = r'--oem 3 --psm 7 -l chi_sim+eng'
-            text = pytesseract.image_to_string(enhanced_img, config=custom_config)
+            # ====== 准备多种图像预处理策略 ======
+            preprocessed_images = []
 
-            # 清理文本
-            text_cleaned = text.strip().lower()
-            print(f"   识别到的文字: '{text.strip()}'")
+            # 策略1: 颜色反转 + 转灰度 + 放大（针对蓝底白字按钮）
+            try:
+                inverted = ImageOps.invert(screenshot.convert('RGB'))
+                # 转换为灰度图（更适合OCR）
+                inverted_gray = inverted.convert('L')
+                if screenshot.width < 200 or screenshot.height < 60:
+                    scale = 3
+                    inverted_gray = inverted_gray.resize(
+                        (screenshot.width * scale, screenshot.height * scale),
+                        Image.LANCZOS
+                    )
+                preprocessed_images.append(('inverted-gray-upscaled', inverted_gray))
+                # 保存调试图像
+                debug_path = screenshot_path.replace('.png', '_inverted.png')
+                inverted_gray.save(debug_path)
+            except Exception as e:
+                print(f"   预处理策略1失败: {e}")
 
-            # 判断是否包含"登录"相关文字
-            login_keywords = ['登录', 'login', '登', '录', 'sign in', 'signin']
-            has_login_text = any(keyword in text_cleaned for keyword in login_keywords)
+            # 策略2: 颜色反转 + 二值化 + 放大（针对蓝底白字 → 黑底白字）
+            try:
+                inverted = ImageOps.invert(screenshot.convert('RGB'))
+                inverted_gray = inverted.convert('L')
+                # 对反转后的图像进行二值化，保持白色文字
+                threshold = 150  # 提取亮色部分（文字）
+                binarized = inverted_gray.point(lambda x: 255 if x > threshold else 0, mode='L')
+                if screenshot.width < 200 or screenshot.height < 60:
+                    scale = 4  # 增大放大倍数
+                    binarized = binarized.resize(
+                        (screenshot.width * scale, screenshot.height * scale),
+                        Image.LANCZOS
+                    )
+                preprocessed_images.append(('inv-white-on-black', binarized))
+                # 保存调试图像
+                debug_path = screenshot_path.replace('.png', '_binary.png')
+                binarized.save(debug_path)
+            except Exception as e:
+                print(f"   预处理策略2失败: {e}")
 
-            if has_login_text:
-                print(f"   → 检测到登录按钮文字，状态: 未登录")
-                return False
-            else:
-                print(f"   → 未检测到登录按钮文字，状态: 已登录")
-                return True
+            # 策略2B: 颜色反转 + 反向二值化（黑底白字 → 白底黑字，最适合OCR）
+            try:
+                inverted = ImageOps.invert(screenshot.convert('RGB'))
+                inverted_gray = inverted.convert('L')
+                # 二值化并反转：白色文字变黑色，黑色背景变白色
+                threshold = 150
+                binarized = inverted_gray.point(lambda x: 0 if x > threshold else 255, mode='L')
+                if screenshot.width < 200 or screenshot.height < 60:
+                    scale = 4
+                    binarized = binarized.resize(
+                        (screenshot.width * scale, screenshot.height * scale),
+                        Image.Resampling.LANCZOS
+                    )
+                preprocessed_images.append(('inv-black-on-white', binarized))
+                # 保存调试图像
+                debug_path = screenshot_path.replace('.png', '_binary2.png')
+                binarized.save(debug_path)
+            except Exception as e:
+                print(f"   预处理策略2B失败: {e}")
+
+            # 策略3: 直接二值化原图 + 放大（提取白色文字）
+            try:
+                gray = screenshot.convert('L')
+                threshold = 180
+                binarized_orig = gray.point(lambda x: 255 if x > threshold else 0, mode='1')
+                if screenshot.width < 200 or screenshot.height < 60:
+                    scale = 3
+                    binarized_orig = binarized_orig.resize(
+                        (screenshot.width * scale, screenshot.height * scale),
+                        Image.Resampling.LANCZOS
+                    )
+                preprocessed_images.append(('orig-binary-upscaled', binarized_orig))
+            except Exception as e:
+                print(f"   预处理策略3失败: {e}")
+
+            # 策略4: 对比度增强 + 放大（原有策略改进版）
+            try:
+                enhancer = ImageEnhance.Contrast(screenshot)
+                enhanced = enhancer.enhance(2.5)  # 增强对比度
+                if screenshot.width < 200 or screenshot.height < 60:
+                    scale = 3
+                    enhanced = enhanced.resize(
+                        (screenshot.width * scale, screenshot.height * scale),
+                        Image.Resampling.LANCZOS
+                    )
+                preprocessed_images.append(('enhanced-upscaled', enhanced))
+                # 保存调试图像
+                debug_path = screenshot_path.replace('.png', '_enhanced.png')
+                enhanced.save(debug_path)
+            except Exception as e:
+                print(f"   预处理策略4失败: {e}")
+
+            # 策略5: 仅放大原图
+            try:
+                if screenshot.width < 200 or screenshot.height < 60:
+                    scale = 3
+                    upscaled = screenshot.resize(
+                        (screenshot.width * scale, screenshot.height * scale),
+                        Image.Resampling.LANCZOS
+                    )
+                    preprocessed_images.append(('upscaled', upscaled))
+            except Exception as e:
+                print(f"   预处理策略5失败: {e}")
+
+            # ====== 准备多种OCR配置 ======
+            ocr_configs = [
+                # 优先尝试纯中文识别（更准确）
+                ('psm7-chi', r'--oem 3 --psm 7 -l chi_sim'),        # 单行文本 + 仅中文
+                ('psm8-chi', r'--oem 3 --psm 8 -l chi_sim'),        # 单词模式 + 仅中文
+                ('psm6-chi', r'--oem 3 --psm 6 -l chi_sim'),        # 统一文本块 + 仅中文
+                # 中英混合识别
+                ('psm7-mix', r'--oem 3 --psm 7 -l chi_sim+eng'),    # 单行文本 + 中英文
+                ('psm8-mix', r'--oem 3 --psm 8 -l chi_sim+eng'),    # 单词模式 + 中英文
+                ('psm6-mix', r'--oem 3 --psm 6 -l chi_sim+eng'),    # 统一文本块 + 中英文
+                # LSTM引擎（备选）
+                ('psm7-lstm', r'--oem 1 --psm 7 -l chi_sim'),       # 单行文本 + LSTM
+            ]
+
+            # ====== 尝试所有组合 ======
+            print(f"   开始多策略OCR识别...")
+            best_match = None
+            best_text = ""
+
+            for img_name, img in preprocessed_images:
+                for config_name, config in ocr_configs:
+                    try:
+                        text = pytesseract.image_to_string(img, config=config)
+                        text_cleaned = text.strip().lower()
+
+                        # 打印识别结果
+                        if text.strip():
+                            print(f"   → {img_name:20s} + {config_name:12s}: '{text.strip()}'")
+
+                        # 检查是否包含登录关键词
+                        for keyword in login_keywords:
+                            if keyword in text_cleaned:
+                                print(f"   ✓ 匹配到关键词: '{keyword}'")
+                                print(f"   → 检测到登录按钮文字，状态: 未登录")
+                                return False  # 早期退出优化
+
+                        # 记录最佳匹配（用于调试）
+                        if len(text_cleaned) > len(best_text):
+                            best_text = text_cleaned
+                            best_match = f"{img_name} + {config_name}"
+
+                    except Exception as e:
+                        # 静默失败，继续尝试其他组合
+                        continue
+
+            # 所有策略都未检测到登录关键词
+            print(f"   → 未检测到登录按钮文字，状态: 已登录")
+            if best_match:
+                print(f"   （最佳识别: {best_match} → '{best_text}'）")
+            return True
 
         except Exception as e:
             print(f"   ⚠️  OCR识别出错: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def _manual_login_status_check(self, screenshot_path: str) -> bool:
@@ -1935,64 +2302,176 @@ class THSMacTrader:
         """
         检测是否有登录超时弹窗
 
-        通过OCR识别弹窗区域，检测是否包含"超时"、"过期"等关键词
+        使用多种方式检测：
+        1. OCR识别弹窗内容
+        2. AppleScript检查弹窗窗口名称
 
         返回:
             True: 检测到超时弹窗
             False: 无超时弹窗
             None: 检测失败（未安装OCR或截图失败）
         """
+        print("  → 检测登录超时弹窗...")
+
+        # ========================================
+        # 方法1: OCR识别弹窗内容
+        # ========================================
         try:
-            # 获取弹窗区域坐标
-            popup_region_coords = self.coords.get('popup_region')
+            # 获取弹窗区域坐标（相对坐标或绝对坐标）
+            popup_region_coords = None
+            if self.use_relative_coords and 'popup_region' in self.coords_relative:
+                popup_region_coords = self.coords_relative.get('popup_region')
+            else:
+                popup_region_coords = self.coords.get('popup_region')
+
             if not popup_region_coords:
-                print("   ⚠️  未配置popup_region坐标")
-                return None
+                print("     ⚠️  未配置popup_region坐标")
+            else:
+                # 转换为绝对坐标
+                if len(popup_region_coords) == 4:
+                    x, y, w, h = popup_region_coords
+                    if self.use_relative_coords and self.window_pos:
+                        abs_x = self.window_pos[0] + x
+                        abs_y = self.window_pos[1] + y
+                    else:
+                        abs_x, abs_y = x, y
 
-            # 转换为绝对坐标
-            x, y, w, h = popup_region_coords
-            abs_x, abs_y = self.get_absolute_coords(x, y)
-            region = (int(abs_x), int(abs_y), w, h)
+                    region = (int(abs_x), int(abs_y), w, h)
+                    print(f"     → 截取弹窗区域: {region}")
 
-            # 截图弹窗区域
-            screenshot = pyautogui.screenshot(region=region)
+                    # 截图弹窗区域
+                    screenshot = pyautogui.screenshot(region=region)
 
-            # OCR识别
-            try:
-                import pytesseract
-                from PIL import ImageEnhance
+                    # 保存截图供调试
+                    debug_path = '/tmp/ths_popup_check.png'
+                    screenshot.save(debug_path)
+                    print(f"     → 已保存截图: {debug_path}")
 
-                # 增强对比度
-                enhancer = ImageEnhance.Contrast(screenshot)
-                enhanced_img = enhancer.enhance(2.0)
+                    # OCR识别
+                    try:
+                        import pytesseract
+                        from PIL import ImageEnhance
 
-                # OCR识别中文
-                custom_config = r'--oem 3 --psm 6 -l chi_sim+eng'
-                text = pytesseract.image_to_string(enhanced_img, config=custom_config)
-                text_cleaned = text.strip()
+                        # 增强对比度
+                        enhancer = ImageEnhance.Contrast(screenshot)
+                        enhanced_img = enhancer.enhance(2.0)
 
-                # 检测超时相关关键词
-                timeout_keywords = ['超时', '过期', '重新登录', '登录失效', '会话失效', 'timeout', 'expired']
-                is_timeout = any(keyword in text_cleaned.lower() for keyword in timeout_keywords)
+                        # OCR识别中文和英文
+                        custom_config = r'--oem 3 --psm 6 -l chi_sim+eng'
+                        text = pytesseract.image_to_string(enhanced_img, config=custom_config)
+                        text_cleaned = text.strip().replace(' ', '').replace('\n', '')
 
-                if is_timeout:
-                    print(f"   ⚠️  检测到登录超时弹窗（识别到: {text_cleaned}）")
+                        print(f"     → OCR识别到的文字: '{text_cleaned}'")
 
-                return is_timeout
+                        # 扩展关键字列表
+                        timeout_keywords = [
+                            '登录超时', '会话超时', '超时',
+                            '会话过期', '登录过期', '过期',
+                            '重新登录', '请重新登录',
+                            '连接超时', '网络超时',
+                            '登录失效', '会话失效',
+                            'timeout', 'expired', 'sessionexpired'
+                        ]
 
-            except ImportError:
-                print("   ⚠️  未安装OCR依赖，无法自动检测弹窗")
-                return None
+                        for keyword in timeout_keywords:
+                            if keyword in text_cleaned.lower():
+                                print(f"     ✅ 检测到超时弹窗（关键字: {keyword}）")
+                                return True
+
+                        # 如果识别到了较长文字，但没有匹配关键字，输出以供调试
+                        if len(text_cleaned) > 5:
+                            print(f"     ⚠️  识别到文字但无关键字匹配: {text_cleaned}")
+
+                    except ImportError:
+                        print("     ⚠️  未安装pytesseract，无法使用OCR检测")
+                    except Exception as ocr_error:
+                        print(f"     ⚠️  OCR识别出错: {ocr_error}")
 
         except Exception as e:
-            print(f"   ❌ 超时弹窗检测失败: {e}")
-            return None
+            print(f"     ❌ OCR方法失败: {e}")
+
+        # ========================================
+        # 方法2: AppleScript检查弹窗窗口名称
+        # ========================================
+        try:
+            check_popup_script = f'''
+            tell application "System Events"
+                tell process "{self.app_name}"
+                    set windowCount to count of windows
+                    if windowCount > 0 then
+                        set frontWindow to front window
+                        set windowName to name of frontWindow
+                        return windowName
+                    else
+                        return ""
+                    end if
+                end tell
+            end tell
+            '''
+
+            result = subprocess.run(
+                ['osascript', '-e', check_popup_script],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            window_name = result.stdout.strip()
+            print(f"     → 当前窗口名称: '{window_name}'")
+
+            # 检查窗口名称是否包含弹窗特征
+            popup_window_keywords = ['超时', '过期', '提示', '警告', '错误', 'timeout', 'expired', 'error']
+            for keyword in popup_window_keywords:
+                if keyword in window_name.lower():
+                    print(f"     ✅ 检测到弹窗窗口（关键字: {keyword}）")
+                    return True
+
+        except Exception as window_error:
+            print(f"     ⚠️  窗口名称检查失败: {window_error}")
+
+        # ========================================
+        # 方法3: 检查是否有模态对话框
+        # ========================================
+        try:
+            check_dialog_script = f'''
+            tell application "System Events"
+                tell process "{self.app_name}"
+                    if exists sheet 1 of window 1 then
+                        return "sheet"
+                    else if exists window 2 then
+                        return "dialog"
+                    else
+                        return "none"
+                    end if
+                end tell
+            end tell
+            '''
+
+            result = subprocess.run(
+                ['osascript', '-e', check_dialog_script],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            dialog_type = result.stdout.strip()
+            print(f"     → 对话框类型: {dialog_type}")
+
+            if dialog_type in ['sheet', 'dialog']:
+                print(f"     ⚠️  检测到模态对话框，可能是超时弹窗")
+                # 这里不直接返回True，因为可能是其他对话框
+                # 但输出警告供用户判断
+
+        except Exception as dialog_error:
+            print(f"     ⚠️  对话框检查失败: {dialog_error}")
+
+        print("     → 未检测到超时弹窗")
+        return False
 
     def handle_timeout_popup(self) -> bool:
         """
         处理登录超时弹窗
 
         点击弹窗的确定按钮，然后验证弹窗是否关闭
+        支持多种策略：点击按钮、回车键、ESC键
 
         返回:
             True: 处理成功（弹窗已关闭）
@@ -2001,32 +2480,65 @@ class THSMacTrader:
         print("   🔄 处理超时弹窗...")
 
         try:
-            # 获取弹窗确定按钮坐标
-            confirm_button_coords = self.coords.get('popup_confirm_button')
+            # 获取弹窗确定按钮坐标（优先使用相对坐标）
+            if self.use_relative_coords and 'popup_confirm_button' in self.coords_relative:
+                confirm_button_coords = self.coords_relative.get('popup_confirm_button')
+                print(f"   → 使用相对坐标: {confirm_button_coords}")
+            else:
+                confirm_button_coords = self.coords.get('popup_confirm_button')
+                print(f"   → 使用绝对坐标: {confirm_button_coords}")
+
             if not confirm_button_coords:
                 print("   ❌ 未配置popup_confirm_button坐标")
                 return False
 
-            # 点击确定按钮
-            self.click_at(*confirm_button_coords)
-            time.sleep(1.5)
+            # 策略1: 多次点击确定按钮（有时第一次点击不生效）
+            print("   → 策略1: 点击确定按钮")
+            for attempt in range(3):
+                print(f"   → 第 {attempt + 1} 次点击...")
+                self.click_at(*confirm_button_coords)
+                time.sleep(0.8)
 
-            # 验证弹窗是否关闭
-            result = self.check_timeout_popup()
+                # 每次点击后检查弹窗是否关闭
+                result = self.check_timeout_popup()
+                if not result:
+                    print("   ✅ 超时弹窗已关闭（点击按钮成功）")
+                    return True
 
-            if result is False:
-                print("   ✅ 超时弹窗已关闭")
-                return True
-            elif result is True:
-                print("   ❌ 弹窗仍然存在")
-                return False
-            else:  # result is None
-                # OCR检测失败，假设弹窗已关闭
-                print("   ⚠️  无法验证弹窗状态，假设已关闭")
-                return True
+            print("   ⚠️  点击按钮未能关闭弹窗，尝试其他策略...")
+
+            # 策略2: 尝试按回车键
+            print("   → 策略2: 按回车键")
+            for attempt in range(2):
+                pyautogui.press('return')
+                time.sleep(0.8)
+
+                result = self.check_timeout_popup()
+                if not result:
+                    print("   ✅ 超时弹窗已关闭（回车键成功）")
+                    return True
+
+            # 策略3: 尝试按ESC键
+            print("   → 策略3: 按ESC键")
+            for attempt in range(2):
+                pyautogui.press('escape')
+                time.sleep(0.8)
+
+                result = self.check_timeout_popup()
+                if not result:
+                    print("   ✅ 超时弹窗已关闭（ESC键成功）")
+                    return True
+
+            # 所有策略都失败
+            print("   ❌ 所有策略均未能关闭弹窗")
+            print("   💡 提示: 请检查popup_confirm_button坐标是否正确")
+            print(f"   💡 当前使用{'相对' if self.use_relative_coords else '绝对'}坐标模式")
+            return False
 
         except Exception as e:
             print(f"   ❌ 处理弹窗失败: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def ensure_ready_for_trading(self, password: str = None, max_retries: int = 3) -> bool:
@@ -2050,6 +2562,39 @@ class THSMacTrader:
         print("\n" + "="*70)
         print("🔧 自动状态检测与恢复")
         print("="*70)
+
+        # ============================
+        # 系统诊断
+        # ============================
+        print("\n📊 系统诊断:")
+
+        # 1. 检查进程
+        print("\n1. 进程检查:")
+        detected_process_name = self.get_ths_process_name()
+        if detected_process_name != self.app_name:
+            print(f"  → 自动更新进程名称: {self.app_name} -> {detected_process_name}")
+            self.app_name = detected_process_name
+
+        # 2. 检查窗口位置
+        print("\n2. 窗口位置检查:")
+        window_pos = self.get_window_position()
+        if window_pos:
+            print(f"  ✅ 窗口位置: ({window_pos[0]}, {window_pos[1]}), 大小: {window_pos[2]}x{window_pos[3]}")
+            self.window_pos = window_pos
+        else:
+            print(f"  ⚠️  无法获取窗口位置（将使用绝对坐标）")
+            if self.use_relative_coords:
+                print(f"  💡 建议: 切换到绝对坐标模式或检查窗口权限")
+
+        # 3. 检查坐标模式
+        print("\n3. 坐标模式:")
+        print(f"  → 使用相对坐标: {self.use_relative_coords}")
+        if self.use_relative_coords and not self.window_pos:
+            print(f"  ⚠️  相对坐标模式需要窗口位置，但获取失败")
+            print(f"  → 自动切换到绝对坐标模式")
+            self.use_relative_coords = False
+
+        print("\n" + "="*70)
 
         for retry in range(max_retries):
             if retry > 0:
@@ -2076,7 +2621,7 @@ class THSMacTrader:
             print("\n检查 2/4: 是否有登录超时弹窗?")
             popup_result = self.check_timeout_popup()
 
-            if popup_result is True:
+            if popup_result:
                 # 检测到超时弹窗，处理它
                 if not self.handle_timeout_popup():
                     print("   ❌ 超时弹窗处理失败")
@@ -2097,7 +2642,7 @@ class THSMacTrader:
 
                 # 如果没有提供密码，尝试从环境变量或配置文件读取
                 if not password:
-                    password = os.environ.get('THS_PASSWORD')
+                    password = "824532" #os.environ.get('THS_PASSWORD')
 
                 if not password:
                     print("   ❌ 未提供密码，无法自动登录")
@@ -2518,12 +3063,7 @@ def main():
 
         elif choice == '5':
             # 智能卖出 - OCR识别持仓后选择卖出
-            # 询问是否使用OCR识别验证码（如果需要登录）
-            use_ocr = input("是否使用OCR自动识别验证码？(y/n, 默认y): ").strip().lower()
-            manual_captcha = (use_ocr == 'n')
-
             # 注意：smart_sell 内部可能需要登录，但目前不支持 manual_captcha 参数
-            # 这里仅作演示，实际需要修改 smart_sell 方法签名
             trader.smart_sell(confirm=True)
 
         elif choice == '6':
