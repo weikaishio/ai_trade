@@ -10,20 +10,36 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from .market_data_client import StockData
-from .model_client import ModelScore
-from .config_quant import (
-    SCORE_THRESHOLDS,
-    STOP_LOSS,
-    STOP_PROFIT,
-    EMERGENCY_STOP_LOSS,
-    HOLDING_DAYS_WARNING,
-    HOLDING_DAYS_LONG,
-    DECISION_WEIGHTS,
-    BLACKLIST_STOCKS,
-    WHITELIST_STOCKS,
-    ST_STOCK_PREFIX
-)
+try:
+    from .market_data_client import StockData
+    from .model_client import ModelScore
+    from .config_quant import (
+        SCORE_THRESHOLDS,
+        STOP_LOSS,
+        STOP_PROFIT,
+        EMERGENCY_STOP_LOSS,
+        HOLDING_DAYS_WARNING,
+        HOLDING_DAYS_LONG,
+        DECISION_WEIGHTS,
+        BLACKLIST_STOCKS,
+        WHITELIST_STOCKS,
+        ST_STOCK_PREFIX
+    )
+except ImportError:
+    from market_data_client import StockData
+    from model_client import ModelScore
+    from config_quant import (
+        SCORE_THRESHOLDS,
+        STOP_LOSS,
+        STOP_PROFIT,
+        EMERGENCY_STOP_LOSS,
+        HOLDING_DAYS_WARNING,
+        HOLDING_DAYS_LONG,
+        DECISION_WEIGHTS,
+        BLACKLIST_STOCKS,
+        WHITELIST_STOCKS,
+        ST_STOCK_PREFIX
+    )
 
 # 配置日志
 logger = logging.getLogger(__name__)

@@ -13,14 +13,24 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from .config_quant import (
-    MODEL_API_URL,
-    MODEL_API_TIMEOUT,
-    MODEL_API_RETRY,
-    CACHE_ENABLED,
-    CACHE_TTL,
-    get_decision_level
-)
+try:
+    from .config_quant import (
+        MODEL_API_URL,
+        MODEL_API_TIMEOUT,
+        MODEL_API_RETRY,
+        CACHE_ENABLED,
+        CACHE_TTL,
+        get_decision_level
+    )
+except ImportError:
+    from config_quant import (
+        MODEL_API_URL,
+        MODEL_API_TIMEOUT,
+        MODEL_API_RETRY,
+        CACHE_ENABLED,
+        CACHE_TTL,
+        get_decision_level
+    )
 
 # 配置日志
 logger = logging.getLogger(__name__)

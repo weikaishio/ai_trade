@@ -14,17 +14,30 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
-from .config_quant import (
-    API_HOST,
-    API_PORT,
-    API_TITLE,
-    API_VERSION,
-    API_DESCRIPTION
-)
-from .market_data_client import MarketDataClient, StockData
-from .model_client import ModelClient, ModelScore
-from .decision_engine import DecisionEngine, Position, TradeSignal
-from .risk_manager import RiskManager
+try:
+    from .config_quant import (
+        API_HOST,
+        API_PORT,
+        API_TITLE,
+        API_VERSION,
+        API_DESCRIPTION
+    )
+    from .market_data_client import MarketDataClient, StockData
+    from .model_client import ModelClient, ModelScore
+    from .decision_engine import DecisionEngine, Position, TradeSignal
+    from .risk_manager import RiskManager
+except ImportError:
+    from config_quant import (
+        API_HOST,
+        API_PORT,
+        API_TITLE,
+        API_VERSION,
+        API_DESCRIPTION
+    )
+    from market_data_client import MarketDataClient, StockData
+    from model_client import ModelClient, ModelScore
+    from decision_engine import DecisionEngine, Position, TradeSignal
+    from risk_manager import RiskManager
 
 # 配置日志
 logging.basicConfig(

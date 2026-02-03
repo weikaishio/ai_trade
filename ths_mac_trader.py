@@ -106,7 +106,16 @@ class THSMacTrader:
             'login_button': (138, 238),
             'password_input': (1108, 562),
             'captcha_input': (1109, 653),
-            'login_confirm_button': (1114, 690),
+            'login_confirm_button': (1120, 680),
+
+            # 状态检测相关坐标（用于自动恢复功能）
+            # Tab相关
+            'trade_tab': (70, 408),                      # 交易Tab点击位置（与buy_button同位置）
+            'trade_tab_region': (250, 70, 200, 40),      # 交易Tab OCR识别区域（包含"买入"/"卖出"等文字）
+
+            # 弹窗相关
+            'popup_region': (923, 470, 254, 236),        # 弹窗内容区域（窗口中央）
+            'popup_confirm_button': (974, 676),          # 弹窗确定按钮位置
 
         }
 
@@ -357,36 +366,43 @@ class THSMacTrader:
                 "./debug_password_input_position.png"
             )
 
-        # 方法1：使用剪贴板（推荐）
-        print("  → 使用剪贴板方式...")
-        success = self.input_text_via_clipboard(x, y, password)
+        success = False
 
-        if not success:
-            # 方法2：直接输入（备用）
-            print("  → 剪贴板方式失败，尝试直接输入...")
+        # 方法1：直接输入（对密码框更可靠）
+        if password.isascii():
+            print("  → 使用直接输入方式（推荐用于密码框）...")
             try:
+                # 点击密码框，确保获取焦点
+                print("  → 点击密码框...")
                 self.click_at(x, y, clicks=1)
-                time.sleep(0.5)
-
-                # 清空
-                pyautogui.hotkey('command', 'a')
-                time.sleep(0.1)
-                pyautogui.press('delete')
                 time.sleep(0.2)
 
-                # 输入密码（只支持ASCII字符）
-                if password.isascii():
-                    pyautogui.typewrite(password, interval=0.1)
-                    time.sleep(0.2)
-                    print("  ✅ 密码输入成功（直接输入方式）")
-                    success = True
-                else:
-                    print("  ❌ 密码包含非ASCII字符，无法使用直接输入")
-                    return False
+                # 再次点击确保焦点
+                self.click_at(x, y, clicks=1)
+                time.sleep(0.3)
+
+                # 清空现有内容（简单处理）
+                print("  → 清空密码框...")
+                pyautogui.hotkey('command', 'a')
+                time.sleep(0.2)
+                pyautogui.press('delete')
+                time.sleep(0.3)
+
+                # 直接输入密码（字符间隔加大）
+                print(f"  → 输入密码（{len(password)}位）...")
+                pyautogui.typewrite(password, interval=0.15)  # 增加间隔到0.15秒
+                time.sleep(0.5)  # 输入完成后等待
+
+                print("  ✅ 密码输入成功（直接输入方式）")
+                success = True
 
             except Exception as e:
-                print(f"  ❌ 直接输入也失败: {e}")
-                return False
+                print(f"  ❌ 直接输入失败: {e}")
+                success = False
+        else:
+            # 方法2：非ASCII密码使用剪贴板
+            print("  → 密码包含非ASCII字符，使用剪贴板方式...")
+            success = self.input_text_via_clipboard(x, y, password)
 
         # 成功后，移除密码框焦点，避免后续输入到密码框
         if success:
@@ -394,8 +410,6 @@ class THSMacTrader:
             # 按 Tab 键移动到下一个输入框（通常是验证码框）
             pyautogui.press('tab')
             time.sleep(0.3)
-            # 或者点击弹窗的空白区域
-            # 这里使用Tab键更可靠
 
         return success
 
@@ -1259,7 +1273,28 @@ class THSMacTrader:
             threshold = np.mean(img_array)  # 使用均值作为阈值
             image = image.point(lambda x: 255 if x > threshold else 0)
 
-            # 去噪：去除小的噪点
+            # 去除边框（关键修复）
+            # 验证码外围有边框线，会干扰OCR识别
+            # 策略：内缩固定边距，去除外围的边框线
+            img_array = np.array(image)
+            h, w = img_array.shape
+
+            # 简单内缩法：去除外围5%的区域（通常是边框）
+            # 这比检测更稳定，因为验证码尺寸相对固定
+            margin_percent = 0.06  # 内缩6%
+            top_crop = int(h * margin_percent)
+            bottom_crop = h - int(h * margin_percent)
+            left_crop = int(w * margin_percent)
+            right_crop = w - int(w * margin_percent)
+
+            # 确保裁剪后还有足够的内容
+            if bottom_crop > top_crop + 20 and right_crop > left_crop + 40:
+                print(f"  → 内缩去除边框: {margin_percent*100:.0f}% (上下各{top_crop}px, 左右各{int(w * margin_percent)}px)")
+                img_array_cropped = img_array[top_crop:bottom_crop, left_crop:right_crop]
+                image = Image.fromarray(img_array_cropped)
+                print(f"  → 去除边框后大小: {image.size} (原始: {w}x{h})")
+
+            # 去噪：去除小的噪点（可选，目前注释掉）
             # image = image.filter(ImageFilter.MedianFilter(size=3))
 
             # 保存预处理后的图片（调试用）
@@ -1267,53 +1302,208 @@ class THSMacTrader:
             image.save(preprocessed_path)
             print(f"  → 预处理图片: {preprocessed_path}")
 
-            # 3. OCR识别 - 尝试多种配置
-            # 存储所有结果
+            # 3. OCR识别 - 尝试多种配置和预处理
+            # 存储所有原始结果（用于调试和投票）
+            all_raw_results = []
+
+            # 尝试多种预处理+OCR配置组合
+            # 策略A: 当前预处理（高对比度）
+            image_high_contrast = image.copy()
+
+            # 策略B: 降低对比度预处理（避免过度增强产生噪点）
+            image_low_contrast = Image.open(captcha_path)
+            image_low_contrast = image_low_contrast.resize(new_size, Image.Resampling.LANCZOS)
+            image_low_contrast = image_low_contrast.convert('L')
+            enhancer = ImageEnhance.Sharpness(image_low_contrast)
+            image_low_contrast = enhancer.enhance(1.5)  # 降低锐度
+            enhancer = ImageEnhance.Contrast(image_low_contrast)
+            image_low_contrast = enhancer.enhance(2.0)  # 降低对比度
+            img_array_low = np.array(image_low_contrast)
+            threshold_low = np.mean(img_array_low)
+            image_low_contrast = image_low_contrast.point(lambda x: 255 if x > threshold_low else 0)
+
+            # 存储有效结果（长度符合要求）
             results = []
 
-            # 配置1：纯数字（最常见，优先级最高）
+            # 配置1：纯数字 + 高对比度预处理
             config_digits = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789'
-            result1 = pytesseract.image_to_string(image, config=config_digits).strip()
-            result1 = ''.join(c for c in result1 if c.isdigit())
-            print(f"  → 尝试1 (纯数字): '{result1}'")
-            if result1 and 4 <= len(result1) <= 6:  # 验证码通常4-6位
-                results.append(('digits', result1, len(result1)))
+            result1a = pytesseract.image_to_string(image_high_contrast, config=config_digits).strip()
+            result1a_clean = ''.join(c for c in result1a if c.isdigit())
+            all_raw_results.append(result1a_clean)
+            print(f"  → 尝试1a (纯数字+高对比度): '{result1a_clean}'")
+
+            # 配置1b：纯数字 + 低对比度预处理
+            result1b = pytesseract.image_to_string(image_low_contrast, config=config_digits).strip()
+            result1b_clean = ''.join(c for c in result1b if c.isdigit())
+            all_raw_results.append(result1b_clean)
+            print(f"  → 尝试1b (纯数字+低对比度): '{result1b_clean}'")
 
             # 配置2：数字+字母
             config_alnum = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-            result2 = pytesseract.image_to_string(image, config=config_alnum).strip()
-            result2 = ''.join(c for c in result2 if c.isalnum())
-            print(f"  → 尝试2 (数字+字母): '{result2}'")
-            if result2 and 4 <= len(result2) <= 6:
-                results.append(('alnum', result2, len(result2)))
+            result2 = pytesseract.image_to_string(image_high_contrast, config=config_alnum).strip()
+            result2_clean = ''.join(c for c in result2 if c.isalnum())
+            all_raw_results.append(result2_clean)
+            print(f"  → 尝试2 (数字+字母): '{result2_clean}'")
 
             # 配置3：单词模式
             config_word = r'--oem 3 --psm 8'
-            result3 = pytesseract.image_to_string(image, config=config_word).strip()
-            result3 = ''.join(c for c in result3 if c.isalnum())
-            print(f"  → 尝试3 (单词模式): '{result3}'")
-            if result3 and 4 <= len(result3) <= 6:
-                results.append(('word', result3, len(result3)))
+            result3 = pytesseract.image_to_string(image_high_contrast, config=config_word).strip()
+            result3_clean = ''.join(c for c in result3 if c.isalnum())
+            all_raw_results.append(result3_clean)
+            print(f"  → 尝试3 (单词模式): '{result3_clean}'")
+
+            # 配置4：PSM 13 (单行原始文本，无OSD)
+            config_raw = r'--oem 3 --psm 13 -c tessedit_char_whitelist=0123456789'
+            result4 = pytesseract.image_to_string(image_low_contrast, config=config_raw).strip()
+            result4_clean = ''.join(c for c in result4 if c.isdigit())
+            all_raw_results.append(result4_clean)
+            print(f"  → 尝试4 (原始行模式): '{result4_clean}'")
+
+            # 配置5：PSM 6 (统一文本块) + 低对比度
+            config_block = r'--oem 3 --psm 6 -c tessedit_char_whitelist=0123456789'
+            result5 = pytesseract.image_to_string(image_low_contrast, config=config_block).strip()
+            result5_clean = ''.join(c for c in result5 if c.isdigit())
+            all_raw_results.append(result5_clean)
+            print(f"  → 尝试5 (文本块模式): '{result5_clean}'")
+
+            # 配置6：只使用LSTM (OEM 1) + 低对比度
+            config_lstm = r'--oem 1 --psm 7 -c tessedit_char_whitelist=0123456789'
+            result6 = pytesseract.image_to_string(image_low_contrast, config=config_lstm).strip()
+            result6_clean = ''.join(c for c in result6 if c.isdigit())
+            all_raw_results.append(result6_clean)
+            print(f"  → 尝试6 (LSTM模式): '{result6_clean}'")
+
+            # 配置7：只使用Legacy (OEM 0) + 低对比度
+            try:
+                config_legacy = r'--oem 0 --psm 7 -c tessedit_char_whitelist=0123456789'
+                result7 = pytesseract.image_to_string(image_low_contrast, config=config_legacy).strip()
+                result7_clean = ''.join(c for c in result7 if c.isdigit())
+                all_raw_results.append(result7_clean)
+                print(f"  → 尝试7 (Legacy模式): '{result7_clean}'")
+            except Exception as e:
+                # Legacy引擎可能不可用（缺少训练数据）
+                print(f"  → 尝试7 (Legacy模式): 跳过（引擎不可用）")
+                all_raw_results.append('')  # 添加空结果保持索引一致
+
+            # 过滤长度并添加到候选结果
+            config_names = ['digits-high', 'digits-low', 'alnum', 'word', 'raw', 'block', 'lstm', 'legacy']
+            for idx, raw_result in enumerate(all_raw_results):
+                if raw_result and 4 <= len(raw_result) <= 6:
+                    config_name = config_names[idx] if idx < len(config_names) else f'config{idx}'
+                    results.append((config_name, raw_result, len(raw_result)))
+
+            # 加权投票机制：提取前5位进行投票
+            print(f"  → 有效结果数: {len(results)}")
+            if len(results) >= 2:
+                # 统计每个位置上各数字出现的频率
+                from collections import Counter
+
+                # 找到最常见的长度
+                length_counter = Counter([r[2] for r in results])
+                most_common_length = 5#length_counter.most_common(1)[0][0]
+                print(f"  → 最常见长度: {most_common_length}位")
+
+                # 只保留最常见长度的结果
+                same_length_results = [r for r in results if r[2] == most_common_length]
+
+                if len(same_length_results) >= 2:
+                    # 配置权重（基于实测准确率和算法特性）
+                    config_weights = {
+                        'lstm': 2.5,         # LSTM神经网络最准确（但较慢）
+                        'legacy': 2.2,       # Legacy引擎准确率也很高
+                        'digits-low': 2.0,   # 低对比度纯数字配置（较少噪点）
+                        'raw': 1.8,          # 原始行模式
+                        'block': 1.6,        # 文本块模式
+                        'word': 1.5,         # 单词模式
+                        'digits-high': 1.0,  # 高对比度纯数字配置基准权重
+                        'alnum': 1.0,        # 数字+字母配置基准权重
+                    }
+
+                    # 加权投票
+                    voted_text = ""
+                    vote_details = []
+                    for pos in range(most_common_length):
+                        # 收集该位置的字符和配置
+                        chars_with_config = []
+                        for config_name, text, _ in same_length_results:
+                            if pos < len(text):
+                                chars_with_config.append((text[pos], config_name))
+
+                        if chars_with_config:
+                            # 加权计数
+                            weighted_counter = {}
+                            for char, config in chars_with_config:
+                                weight = config_weights.get(config, 1.0)
+                                weighted_counter[char] = weighted_counter.get(char, 0.0) + weight
+
+                            # 选择加权得分最高的字符
+                            most_common_char = max(weighted_counter.items(), key=lambda x: x[1])[0]
+                            voted_text += most_common_char
+
+                            # 记录投票详情（调试用）
+                            vote_details.append({
+                                'pos': pos,
+                                'votes': dict(weighted_counter),
+                                'winner': most_common_char
+                            })
+
+                    print(f"  → 加权投票结果: '{voted_text}'")
+
+                    # 显示投票详情（如果有争议的位置）
+                    for detail in vote_details:
+                        if len(detail['votes']) > 1:
+                            # 有多个候选字符，显示投票详情
+                            votes_str = ', '.join([f"'{k}':{v:.1f}" for k, v in sorted(detail['votes'].items(), key=lambda x: -x[1])])
+                            print(f"     位置{detail['pos']}: {votes_str} → '{detail['winner']}'")
+
+                    results.insert(0, ('voted', voted_text, len(voted_text)))
 
             # 智能选择最佳结果
             captcha_text = ""
             if results:
-                # 策略1: 如果纯数字配置有结果，优先使用（同花顺通常是纯数字）
-                digits_results = [r for r in results if r[0] == 'digits']
-                if digits_results:
-                    # 选择最长的纯数字结果
-                    captcha_text = max(digits_results, key=lambda x: x[2])[1]
-                    print(f"  → 选择策略: 优先使用纯数字结果")
+                # 策略1: 优先使用投票结果
+                voted_results = [r for r in results if r[0] == 'voted']
+                if voted_results:
+                    captcha_text = voted_results[0][1]
+                    print(f"  → 选择策略: 使用投票结果")
+                # 策略2: 优先使用纯数字配置的5位结果
+                elif any(r[0].startswith('digits') and r[2] == 5 for r in results):
+                    five_digit_results = [r for r in results if r[0].startswith('digits') and r[2] == 5]
+                    captcha_text = five_digit_results[0][1]
+                    print(f"  → 选择策略: 优先5位纯数字结果")
+                # 策略3: 如果纯数字配置有结果，优先使用
                 else:
-                    # 策略2: 优先选择纯数字的结果（即使来自其他配置）
-                    numeric_results = [r for r in results if r[1].isdigit()]
-                    if numeric_results:
-                        captcha_text = max(numeric_results, key=lambda x: x[2])[1]
-                        print(f"  → 选择策略: 优先选择纯数字内容")
+                    digits_results = [r for r in results if r[0].startswith('digits')]
+                    if digits_results:
+                        # 优先选择5位，其次4位，最后6位
+                        five_digit = [r for r in digits_results if r[2] == 5]
+                        four_digit = [r for r in digits_results if r[2] == 4]
+                        six_digit = [r for r in digits_results if r[2] == 6]
+
+                        if five_digit:
+                            captcha_text = five_digit[0][1]
+                        elif four_digit:
+                            captcha_text = four_digit[0][1]
+                        elif six_digit:
+                            captcha_text = six_digit[0][1]
+                        else:
+                            captcha_text = digits_results[0][1]
+                        print(f"  → 选择策略: 优先使用纯数字结果")
                     else:
-                        # 策略3: 选择最长的结果
-                        captcha_text = max(results, key=lambda x: x[2])[1]
-                        print(f"  → 选择策略: 选择最长结果")
+                        # 策略4: 优先选择纯数字的结果（即使来自其他配置）
+                        numeric_results = [r for r in results if r[1].isdigit()]
+                        if numeric_results:
+                            # 优先5位
+                            five_digit = [r for r in numeric_results if r[2] == 5]
+                            if five_digit:
+                                captcha_text = five_digit[0][1]
+                            else:
+                                captcha_text = max(numeric_results, key=lambda x: x[2])[1]
+                            print(f"  → 选择策略: 优先选择纯数字内容")
+                        else:
+                            # 策略5: 选择最长的结果
+                            captcha_text = max(results, key=lambda x: x[2])[1]
+                            print(f"  → 选择策略: 选择最长结果")
 
             # 4. 清理结果
             captcha_text = captcha_text.strip()
@@ -1656,6 +1846,296 @@ class THSMacTrader:
                 print("已取消")
                 return False
 
+    # ============================================
+    # 状态检测与自动恢复功能
+    # ============================================
+
+    def check_window_active(self) -> bool:
+        """
+        检测同花顺窗口是否在最前端
+
+        使用AppleScript检查窗口状态
+
+        返回:
+            True: 窗口已激活
+            False: 窗口未激活
+        """
+        script = '''
+        tell application "System Events"
+            set frontApp to name of first application process whose frontmost is true
+            return (frontApp is "同花顺")
+        end tell
+        '''
+        try:
+            result = subprocess.run(
+                ['osascript', '-e', script],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            is_active = result.stdout.strip() == "true"
+            if not is_active:
+                print("   ⚠️  同花顺未在最前端")
+            return is_active
+        except Exception as e:
+            print(f"   ❌ 窗口状态检测失败: {e}")
+            return False
+
+    def check_trading_tab(self) -> bool:
+        """
+        检测是否在交易Tab（已简化）
+
+        注意：此方法已简化，不再使用OCR识别
+        直接切换到交易Tab，确保在正确的界面
+
+        返回:
+            True: 成功切换到交易Tab
+            False: 切换失败
+
+        废弃说明：
+            - 旧版本通过OCR识别Tab区域文字判断是否在交易Tab
+            - 新版本直接点击交易Tab坐标，更简单可靠
+            - 保留此方法以保证向后兼容
+        """
+        print("   → 确保在交易Tab（直接切换）...")
+        return self.switch_to_trading_tab()
+
+    def switch_to_trading_tab(self) -> bool:
+        """
+        切换到交易Tab
+
+        直接点击交易Tab位置，不再使用OCR验证
+        简化逻辑，提高可靠性
+
+        返回:
+            True: 切换成功
+            False: 切换失败
+        """
+        print("   🔄 切换到交易Tab...")
+
+        try:
+            # 获取交易Tab坐标
+            trade_tab_coords = self.coords.get('trade_tab')
+            if not trade_tab_coords:
+                print("   ❌ 未配置trade_tab坐标")
+                return False
+
+            # 点击交易Tab
+            self.click_at(*trade_tab_coords)
+            time.sleep(1)
+
+            print("   ✅ 已切换到交易Tab")
+            return True
+
+        except Exception as e:
+            print(f"   ❌ 切换Tab失败: {e}")
+            return False
+
+    def check_timeout_popup(self) -> bool:
+        """
+        检测是否有登录超时弹窗
+
+        通过OCR识别弹窗区域，检测是否包含"超时"、"过期"等关键词
+
+        返回:
+            True: 检测到超时弹窗
+            False: 无超时弹窗
+            None: 检测失败（未安装OCR或截图失败）
+        """
+        try:
+            # 获取弹窗区域坐标
+            popup_region_coords = self.coords.get('popup_region')
+            if not popup_region_coords:
+                print("   ⚠️  未配置popup_region坐标")
+                return None
+
+            # 转换为绝对坐标
+            x, y, w, h = popup_region_coords
+            abs_x, abs_y = self.get_absolute_coords(x, y)
+            region = (int(abs_x), int(abs_y), w, h)
+
+            # 截图弹窗区域
+            screenshot = pyautogui.screenshot(region=region)
+
+            # OCR识别
+            try:
+                import pytesseract
+                from PIL import ImageEnhance
+
+                # 增强对比度
+                enhancer = ImageEnhance.Contrast(screenshot)
+                enhanced_img = enhancer.enhance(2.0)
+
+                # OCR识别中文
+                custom_config = r'--oem 3 --psm 6 -l chi_sim+eng'
+                text = pytesseract.image_to_string(enhanced_img, config=custom_config)
+                text_cleaned = text.strip()
+
+                # 检测超时相关关键词
+                timeout_keywords = ['超时', '过期', '重新登录', '登录失效', '会话失效', 'timeout', 'expired']
+                is_timeout = any(keyword in text_cleaned.lower() for keyword in timeout_keywords)
+
+                if is_timeout:
+                    print(f"   ⚠️  检测到登录超时弹窗（识别到: {text_cleaned}）")
+
+                return is_timeout
+
+            except ImportError:
+                print("   ⚠️  未安装OCR依赖，无法自动检测弹窗")
+                return None
+
+        except Exception as e:
+            print(f"   ❌ 超时弹窗检测失败: {e}")
+            return None
+
+    def handle_timeout_popup(self) -> bool:
+        """
+        处理登录超时弹窗
+
+        点击弹窗的确定按钮，然后验证弹窗是否关闭
+
+        返回:
+            True: 处理成功（弹窗已关闭）
+            False: 处理失败（弹窗仍存在）
+        """
+        print("   🔄 处理超时弹窗...")
+
+        try:
+            # 获取弹窗确定按钮坐标
+            confirm_button_coords = self.coords.get('popup_confirm_button')
+            if not confirm_button_coords:
+                print("   ❌ 未配置popup_confirm_button坐标")
+                return False
+
+            # 点击确定按钮
+            self.click_at(*confirm_button_coords)
+            time.sleep(1.5)
+
+            # 验证弹窗是否关闭
+            result = self.check_timeout_popup()
+
+            if result is False:
+                print("   ✅ 超时弹窗已关闭")
+                return True
+            elif result is True:
+                print("   ❌ 弹窗仍然存在")
+                return False
+            else:  # result is None
+                # OCR检测失败，假设弹窗已关闭
+                print("   ⚠️  无法验证弹窗状态，假设已关闭")
+                return True
+
+        except Exception as e:
+            print(f"   ❌ 处理弹窗失败: {e}")
+            return False
+
+    def ensure_ready_for_trading(self, password: str = None, max_retries: int = 3) -> bool:
+        """
+        确保系统准备就绪，可以开始交易
+
+        自动检测并恢复以下状态：
+        1. 窗口是否在最前端
+        2. 是否有登录超时弹窗
+        3. 是否已登录
+        4. 是否在交易Tab
+
+        参数:
+            password: 登录密码（如需自动登录）
+            max_retries: 最大重试次数（默认3次）
+
+        返回:
+            True: 系统准备就绪
+            False: 恢复失败
+        """
+        print("\n" + "="*70)
+        print("🔧 自动状态检测与恢复")
+        print("="*70)
+
+        for retry in range(max_retries):
+            if retry > 0:
+                print(f"\n⏳ 第 {retry + 1} 次尝试...")
+                time.sleep(2)
+
+            # ============================
+            # 检查1: 窗口是否在最前端
+            # ============================
+            print("\n检查 1/4: 窗口是否在最前端?")
+            if not self.check_window_active():
+                print("   🔄 激活窗口...")
+                if not self.activate_ths_window():
+                    print("   ❌ 窗口激活失败")
+                    continue
+                print("   ✅ 窗口已激活")
+                time.sleep(1)
+            else:
+                print("   ✅ 窗口已在最前端")
+
+            # ============================
+            # 检查2: 是否有登录超时弹窗
+            # ============================
+            print("\n检查 2/4: 是否有登录超时弹窗?")
+            popup_result = self.check_timeout_popup()
+
+            if popup_result is True:
+                # 检测到超时弹窗，处理它
+                if not self.handle_timeout_popup():
+                    print("   ❌ 超时弹窗处理失败")
+                    continue
+                print("   ✅ 超时弹窗已处理")
+                time.sleep(1)
+            elif popup_result is False:
+                print("   ✅ 无超时弹窗")
+            else:  # popup_result is None
+                print("   ⚠️  无法检测弹窗状态（跳过）")
+
+            # ============================
+            # 检查3: 是否已登录
+            # ============================
+            print("\n检查 3/4: 是否已登录?")
+            if not self.check_login_status(auto_detect=True):
+                print("   🔄 执行自动登录...")
+
+                # 如果没有提供密码，尝试从环境变量或配置文件读取
+                if not password:
+                    password = os.environ.get('THS_PASSWORD')
+
+                if not password:
+                    print("   ❌ 未提供密码，无法自动登录")
+                    print("   提示: 请在调用时提供password参数，或设置THS_PASSWORD环境变量")
+                    return False
+
+                if not self.auto_login(password=password):
+                    print("   ❌ 自动登录失败")
+                    continue
+                print("   ✅ 登录成功")
+                time.sleep(2)
+            else:
+                print("   ✅ 已登录")
+
+            # ============================
+            # 检查4: 是否在交易Tab
+            # ============================
+            print("\n检查 4/4: 是否在交易Tab?")
+            # 直接切换到交易Tab，不需要先检测
+            if not self.switch_to_trading_tab():
+                print("   ❌ 切换到交易Tab失败")
+                continue
+            print("   ✅ 已在交易Tab")
+
+            # ============================
+            # 所有检查通过
+            # ============================
+            print("\n" + "="*70)
+            print("✅ 系统准备就绪，可以开始交易")
+            print("="*70)
+            return True
+
+        # 达到最大重试次数
+        print("\n" + "="*70)
+        print(f"❌ 自动恢复失败（已重试 {max_retries} 次）")
+        print("="*70)
+        return False
+
     def calibrate(self):
         """
         坐标校准工具
@@ -1686,12 +2166,22 @@ class THSMacTrader:
             "验证码输入框（可选）",
             "验证码图片区域-左上角（可选）",
             "验证码图片区域-右下角（可选）",
-            "登录确认按钮（可选）"
+            "登录确认按钮（可选）",
+            "交易Tab按钮（可选）",
+            "交易Tab区域-左上角（可选）",
+            "交易Tab区域-右下角（可选）",
+            "登录超时弹窗确认按钮（可选）",
+            "弹窗内容区域-左上角（可选）",
+            "弹窗内容区域-右下角（可选）"
         ]
 
-        # 用于存储验证码区域的两个点
+        # 用于存储各个区域的两个点
         captcha_region_p1 = None
         captcha_region_p2 = None
+        trade_tab_region_p1 = None
+        trade_tab_region_p2 = None
+        popup_region_p1 = None
+        popup_region_p2 = None
 
         for label in labels:
             print(f"\n请将鼠标移动到【{label}】位置，然后在终端按 Enter...")
@@ -1716,6 +2206,24 @@ class THSMacTrader:
                     print(f"   左上角已记录: {captcha_region_p1}")
             elif label == "登录确认按钮（可选）":
                 print("   提示：在登录窗口中指向确认登录的按钮")
+            elif label == "交易Tab按钮（可选）":
+                print("   提示：点击可以切换到交易界面的Tab按钮")
+            elif label == "交易Tab区域-左上角（可选）":
+                print("   提示：用于OCR识别交易Tab状态，请移动到包含'交易'文字区域的左上角")
+                print("   说明：交易Tab区域需要两个点来定义矩形区域")
+            elif label == "交易Tab区域-右下角（可选）":
+                print("   提示：移动到包含'交易'文字区域的右下角")
+                if trade_tab_region_p1:
+                    print(f"   左上角已记录: {trade_tab_region_p1}")
+            elif label == "登录超时弹窗确认按钮（可选）":
+                print("   提示：登录超时弹窗中的确认/确定按钮")
+            elif label == "弹窗内容区域-左上角（可选）":
+                print("   提示：用于OCR识别弹窗内容，请移动到弹窗文字区域的左上角")
+                print("   说明：弹窗内容区域需要两个点来定义矩形区域")
+            elif label == "弹窗内容区域-右下角（可选）":
+                print("   提示：移动到弹窗文字区域的右下角")
+                if popup_region_p1:
+                    print(f"   左上角已记录: {popup_region_p1}")
 
             print("   （输入 's' 跳过此项，'q' 退出校准）")
             user_input = input()
@@ -1728,6 +2236,10 @@ class THSMacTrader:
                 # 如果跳过左上角，也标记右下角为跳过
                 if label == "验证码图片区域-左上角（可选）":
                     captcha_region_p1 = None
+                elif label == "交易Tab区域-左上角（可选）":
+                    trade_tab_region_p1 = None
+                elif label == "弹窗内容区域-左上角（可选）":
+                    popup_region_p1 = None
 
                 continue
 
@@ -1760,6 +2272,58 @@ class THSMacTrader:
                         region_height
                     ))
                     print(f"✅ 验证码图片区域: ({region_x}, {region_y}, {region_width}, {region_height})")
+            elif label == "交易Tab区域-左上角（可选）":
+                trade_tab_region_p1 = (x, y)
+                print(f"✅ {label}: ({x}, {y})")
+            elif label == "交易Tab区域-右下角（可选）":
+                if trade_tab_region_p1 is None:
+                    print(f"⚠️  未记录左上角，跳过交易Tab区域")
+                else:
+                    trade_tab_region_p2 = (x, y)
+                    print(f"✅ {label}: ({x}, {y})")
+
+                    # 计算区域 (x, y, width, height)
+                    x1, y1 = trade_tab_region_p1
+                    x2, y2 = trade_tab_region_p2
+                    region_x = min(x1, x2)
+                    region_y = min(y1, y2)
+                    region_width = abs(x2 - x1)
+                    region_height = abs(y2 - y1)
+
+                    positions.append((
+                        "交易Tab区域",
+                        region_x,
+                        region_y,
+                        region_width,
+                        region_height
+                    ))
+                    print(f"✅ 交易Tab区域: ({region_x}, {region_y}, {region_width}, {region_height})")
+            elif label == "弹窗内容区域-左上角（可选）":
+                popup_region_p1 = (x, y)
+                print(f"✅ {label}: ({x}, {y})")
+            elif label == "弹窗内容区域-右下角（可选）":
+                if popup_region_p1 is None:
+                    print(f"⚠️  未记录左上角，跳过弹窗内容区域")
+                else:
+                    popup_region_p2 = (x, y)
+                    print(f"✅ {label}: ({x}, {y})")
+
+                    # 计算区域 (x, y, width, height)
+                    x1, y1 = popup_region_p1
+                    x2, y2 = popup_region_p2
+                    region_x = min(x1, x2)
+                    region_y = min(y1, y2)
+                    region_width = abs(x2 - x1)
+                    region_height = abs(y2 - y1)
+
+                    positions.append((
+                        "弹窗内容区域",
+                        region_x,
+                        region_y,
+                        region_width,
+                        region_height
+                    ))
+                    print(f"✅ 弹窗内容区域: ({region_x}, {region_y}, {region_width}, {region_height})")
             else:
                 # 普通坐标点
                 positions.append((label, x, y))
@@ -1784,7 +2348,11 @@ class THSMacTrader:
             "密码输入框（可选）": "password_input",
             "验证码输入框（可选）": "captcha_input",
             "验证码图片区域": "captcha_image_region",
-            "登录确认按钮（可选）": "login_confirm_button"
+            "登录确认按钮（可选）": "login_confirm_button",
+            "交易Tab按钮（可选）": "trade_tab",
+            "交易Tab区域": "trade_tab_region",
+            "登录超时弹窗确认按钮（可选）": "popup_confirm_button",
+            "弹窗内容区域": "popup_region"
         }
 
         for item in positions:
@@ -1804,8 +2372,13 @@ class THSMacTrader:
         print("\n" + "="*60)
         print("💡 提示：")
         print("1. 将上述配置复制到 ths_mac_trader.py 的 self.coords_relative 字典中")
-        print("2. 验证码图片区域格式为 (x, y, width, height)，用于截取验证码图片")
-        print("3. 可选项可以跳过，不影响基本交易功能")
+        print("2. 区域坐标格式为 (x, y, width, height)，用于OCR识别或截图")
+        print("3. 新增的校准项说明：")
+        print("   - trade_tab: 交易Tab按钮，用于切换到交易界面")
+        print("   - trade_tab_region: 交易Tab区域，用于OCR识别当前是否在交易界面")
+        print("   - popup_confirm_button: 登录超时弹窗的确认按钮")
+        print("   - popup_region: 弹窗内容区域，用于OCR识别弹窗文字")
+        print("4. 可选项可以跳过，不影响基本交易功能")
         print("="*60)
 
         return positions

@@ -87,6 +87,12 @@ AVOID_TIMES = [
 AUTO_CHECK_INTERVAL = 300  # 自动检查间隔（秒）5分钟
 POSITION_REFRESH_INTERVAL = 600  # 持仓刷新间隔（秒）10分钟
 
+# 自动化模式
+AUTOMATION_MODE = True  # True: 完全自动化运行，无需人工交互
+AUTO_OCR_ENABLED = True  # True: 自动使用OCR识别持仓
+AUTO_TRADING_ENABLED = True  # True: 自动执行交易（生产环境谨慎启用）
+AUTO_LOGIN_IF_NEEDED = True  # True: 需要时自动登录
+
 # 日志配置
 LOG_LEVEL = "INFO"
 LOG_FILE = "logs/quant_system.log"
@@ -151,8 +157,8 @@ ST_STOCK_MAX_RATIO = 0.1  # ST股票最大仓位10%
 # ============================================================================
 
 # 测试模式开关
-TEST_MODE = True  # True: 模拟运行不实际交易
-DRY_RUN = True    # True: 所有交易仅记录不执行
+TEST_MODE = False  # True: 模拟运行不实际交易
+DRY_RUN = False    # True: 所有交易仅记录不执行
 
 # 模拟数据
 MOCK_DATA_ENABLED = False  # 使用模拟数据测试

@@ -36,6 +36,9 @@ try:
         DRY_RUN,
         MOCK_DATA_ENABLED,
         MOCK_POSITIONS,
+        AUTOMATION_MODE,
+        AUTO_OCR_ENABLED,
+        AUTO_TRADING_ENABLED,
         is_trading_time
     )
 except ImportError:
@@ -51,6 +54,9 @@ except ImportError:
         DRY_RUN,
         MOCK_DATA_ENABLED,
         MOCK_POSITIONS,
+        AUTOMATION_MODE,
+        AUTO_OCR_ENABLED,
+        AUTO_TRADING_ENABLED,
         is_trading_time
     )
 
@@ -193,22 +199,45 @@ class QuantTradingSystem:
             ]
 
         # 尝试OCR
-        if self.ocr_available and self.ocr:
-            logger.info("尝试使用OCR识别持仓...")
-            try:
-                positions = self.ocr.get_positions_interactive()
-                if positions:
-                    logger.info(f"OCR识别成功，获取 {len(positions)} 个持仓")
-                    return positions
-            except Exception as e:
-                logger.warning(f"OCR识别失败: {e}")
+        if self.ocr_available and self.ocr and AUTO_OCR_ENABLED:
+            # 根据自动化模式选择方法
+            if AUTOMATION_MODE:
+                logger.info("使用OCR自动识别持仓（自动化模式）...")
+                try:
+                    # 使用自动化方法，无需人工交互
+                    positions = self.ocr.get_positions_automatic()
+                    if positions:
+                        logger.info(f"OCR自动识别成功，获取 {len(positions)} 个持仓")
+                        return positions
+                    else:
+                        logger.warning("OCR自动识别未获取到持仓，返回空列表")
+                        # 自动化模式下不回退到手动输入
+                        return []
+                except Exception as e:
+                    logger.warning(f"OCR自动识别失败: {e}")
+                    # 自动化模式下不回退到手动输入
+                    return []
+            else:
+                logger.info("使用OCR识别持仓（交互式模式）...")
+                try:
+                    # 使用交互式方法
+                    positions = self.ocr.get_positions_interactive()
+                    if positions:
+                        logger.info(f"OCR识别成功，获取 {len(positions)} 个持仓")
+                        return positions
+                except Exception as e:
+                    logger.warning(f"OCR识别失败: {e}")
 
-        # 手动输入
-        if self.trader_available and hasattr(self.trader, 'get_positions_from_input'):
-            logger.info("请手动输入持仓信息...")
-            return self.trader.get_positions_from_input()
+        # 手动输入（仅在非自动化模式下）
+        if not AUTOMATION_MODE:
+            if self.trader_available and hasattr(self.trader, 'get_positions_from_input'):
+                logger.info("请手动输入持仓信息...")
+                return self.trader.get_positions_from_input()
+            else:
+                logger.error("无法获取持仓数据")
+                return []
         else:
-            logger.error("无法获取持仓数据")
+            logger.warning("自动化模式下无法获取持仓，返回空列表")
             return []
 
     def analyze_and_execute(

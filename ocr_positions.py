@@ -331,6 +331,54 @@ class PositionOCR:
 
         return positions
 
+    def get_positions_automatic(self) -> List[Position]:
+        """
+        自动获取持仓信息（无需人工交互）
+
+        流程:
+        1. 自动切换到持仓Tab
+        2. 使用固定坐标截图
+        3. OCR识别持仓
+        4. 返回结果（失败返回空列表）
+
+        返回:
+            Position对象列表（失败时返回空列表）
+        """
+        try:
+            # 激活窗口
+            if not self.activate_ths_window():
+                print("⚠️  无法激活同花顺窗口")
+                return []
+
+            # 切换到持仓标签页
+            try:
+                from ths_mac_trader import THSMacTrader
+                trader = THSMacTrader()
+                trader.switch_to_position_tab()
+                time.sleep(0.5)  # 等待界面切换
+            except Exception as e:
+                print(f"⚠️  切换标签页失败: {e}")
+                # 继续尝试，可能已经在持仓页面
+
+            # 使用固定坐标自动截图
+            screenshot_path = self.capture_position_area(use_calibrated_region=True)
+            if not screenshot_path:
+                print("⚠️  自动截图失败")
+                return []
+
+            # OCR识别
+            positions = self.extract_positions_with_ocr(screenshot_path)
+            if positions:
+                print(f"✅ 自动识别成功，获取 {len(positions)} 个持仓")
+                return positions
+            else:
+                print("⚠️  OCR识别失败，返回空列表")
+                return []
+
+        except Exception as e:
+            print(f"❌ 自动获取持仓失败: {e}")
+            return []
+
     def get_positions_interactive(self) -> List[Position]:
         """
         交互式获取持仓信息

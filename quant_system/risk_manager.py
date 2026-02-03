@@ -12,19 +12,34 @@ from datetime import datetime, date, timedelta
 from pathlib import Path
 from enum import Enum
 
-from .decision_engine import TradeSignal, Position, TradeAction, Priority
-from .config_quant import (
-    MAX_DAILY_TRADES,
-    MAX_POSITION_RATIO,
-    MIN_TRADE_INTERVAL,
-    MAX_SINGLE_TRADE_AMOUNT,
-    MIN_TRADE_AMOUNT,
-    DAILY_LOSS_LIMIT,
-    CIRCUIT_BREAKER_COOLDOWN,
-    ST_STOCK_MAX_RATIO,
-    ALERT_THRESHOLDS,
-    is_trading_time
-)
+try:
+    from .decision_engine import TradeSignal, Position, TradeAction, Priority
+    from .config_quant import (
+        MAX_DAILY_TRADES,
+        MAX_POSITION_RATIO,
+        MIN_TRADE_INTERVAL,
+        MAX_SINGLE_TRADE_AMOUNT,
+        MIN_TRADE_AMOUNT,
+        DAILY_LOSS_LIMIT,
+        CIRCUIT_BREAKER_COOLDOWN,
+        ST_STOCK_MAX_RATIO,
+        ALERT_THRESHOLDS,
+        is_trading_time
+    )
+except ImportError:
+    from decision_engine import TradeSignal, Position, TradeAction, Priority
+    from config_quant import (
+        MAX_DAILY_TRADES,
+        MAX_POSITION_RATIO,
+        MIN_TRADE_INTERVAL,
+        MAX_SINGLE_TRADE_AMOUNT,
+        MIN_TRADE_AMOUNT,
+        DAILY_LOSS_LIMIT,
+        CIRCUIT_BREAKER_COOLDOWN,
+        ST_STOCK_MAX_RATIO,
+        ALERT_THRESHOLDS,
+        is_trading_time
+    )
 
 # 配置日志
 logger = logging.getLogger(__name__)

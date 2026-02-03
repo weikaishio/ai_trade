@@ -91,11 +91,15 @@ def calibrate_with_visual_feedback():
         ("price_input", "【价格输入框】"),
         ("quantity_input", "【数量输入框】"),
         ("confirm_button", "【确定买入/卖出】按钮"),
+        ("trade_tab", "【交易Tab】按钮（用于切换到交易Tab）"),
+        ("popup_confirm_button", "【弹窗确认】按钮（登录超时弹窗的确认按钮）"),
     ]
 
     results = []
+    region_results = []
 
     try:
+        # 第一步：校准点坐标
         for key, label in targets:
             print(f"\n{'─'*70}")
             print(f"📍 请将鼠标移动到 {label}")
@@ -126,6 +130,64 @@ def calibrate_with_visual_feedback():
             pyautogui.moveTo(mouse_x, mouse_y)
             time.sleep(0.3)
 
+        # 第二步：校准区域坐标
+        print(f"\n{'='*70}")
+        print("📐 现在开始校准区域（用于OCR识别）")
+        print("="*70)
+
+        region_targets = [
+            ("trade_tab_region", "【交易Tab区域】（包含\"交易\"文字的矩形区域）"),
+            ("popup_region", "【弹窗内容区域】（登录超时弹窗的文字内容区域）"),
+        ]
+
+        for key, label in region_targets:
+            print(f"\n{'─'*70}")
+            print(f"📍 请校准 {label}")
+            print(f"   步骤1: 将鼠标移动到区域的 【左上角】，然后按 Enter")
+            input()
+
+            # 获取左上角坐标
+            x1, y1 = pyautogui.position()
+            print(f"   ✅ 左上角: ({x1}, {y1})")
+
+            print(f"   步骤2: 将鼠标移动到区域的 【右下角】，然后按 Enter")
+            input()
+
+            # 获取右下角坐标
+            x2, y2 = pyautogui.position()
+            print(f"   ✅ 右下角: ({x2}, {y2})")
+
+            # 计算区域参数
+            abs_x = x1
+            abs_y = y1
+            width = x2 - x1
+            height = y2 - y1
+
+            # 计算相对坐标
+            rel_x = abs_x - win_x
+            rel_y = abs_y - win_y
+
+            region_results.append({
+                'key': key,
+                'label': label,
+                'abs_x': abs_x,
+                'abs_y': abs_y,
+                'width': width,
+                'height': height,
+                'rel_x': rel_x,
+                'rel_y': rel_y
+            })
+
+            print(f"   ✅ 区域记录成功！")
+            print(f"      绝对坐标: ({abs_x}, {abs_y}, {width}, {height})")
+            print(f"      相对坐标: ({rel_x}, {rel_y}, {width}, {height})")
+
+            # 可视化确认 - 移动鼠标到区域中心
+            center_x = abs_x + width // 2
+            center_y = abs_y + height // 2
+            pyautogui.moveTo(center_x, center_y)
+            time.sleep(0.3)
+
     except KeyboardInterrupt:
         print("\n\n⚠️  校准已取消")
         return
@@ -138,8 +200,13 @@ def calibrate_with_visual_feedback():
     print("# 方法1: 使用相对坐标（推荐 - 窗口位置变化时仍然有效）")
     print("-" * 70)
     print("self.coords_relative = {")
+    print("    # 点坐标（x, y）")
     for r in results:
         print(f"    '{r['key']}': ({r['rel_x']}, {r['rel_y']}),  # {r['label']}")
+    print()
+    print("    # 区域坐标（x, y, width, height）")
+    for r in region_results:
+        print(f"    '{r['key']}': ({r['rel_x']}, {r['rel_y']}, {r['width']}, {r['height']}),  # {r['label']}")
     print("}")
     print("\n# 在初始化时设置：")
     print("self.use_relative_coords = True")
@@ -147,8 +214,13 @@ def calibrate_with_visual_feedback():
     print("\n\n# 方法2: 使用绝对坐标（仅当窗口位置固定时使用）")
     print("-" * 70)
     print("self.coords = {")
+    print("    # 点坐标（x, y）")
     for r in results:
         print(f"    '{r['key']}': ({r['abs_x']}, {r['abs_y']}),  # {r['label']}")
+    print()
+    print("    # 区域坐标（x, y, width, height）")
+    for r in region_results:
+        print(f"    '{r['key']}': ({r['abs_x']}, {r['abs_y']}, {r['width']}, {r['height']}),  # {r['label']}")
     print("}")
     print("\n# 在初始化时设置：")
     print("self.use_relative_coords = False")

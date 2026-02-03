@@ -14,14 +14,24 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from .config_quant import (
-    TENCENT_STOCK_API_URL,
-    STOCK_API_TIMEOUT,
-    STOCK_API_RETRY,
-    CACHE_ENABLED,
-    CACHE_TTL,
-    format_stock_code
-)
+try:
+    from .config_quant import (
+        TENCENT_STOCK_API_URL,
+        STOCK_API_TIMEOUT,
+        STOCK_API_RETRY,
+        CACHE_ENABLED,
+        CACHE_TTL,
+        format_stock_code
+    )
+except ImportError:
+    from config_quant import (
+        TENCENT_STOCK_API_URL,
+        STOCK_API_TIMEOUT,
+        STOCK_API_RETRY,
+        CACHE_ENABLED,
+        CACHE_TTL,
+        format_stock_code
+    )
 
 # 配置日志
 logger = logging.getLogger(__name__)
