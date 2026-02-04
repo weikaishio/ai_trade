@@ -101,7 +101,7 @@ class THSMacTrader:
             'order_list_region': (259, 378, 1102, 689),     # 默认区域，需要校准
 
             # 登录相关坐标（需要校准）
-            'captcha_image_region': (1144, 620, 62, 21),
+            'captcha_image_region': (1194, 645, 66, 21),
 
             'login_button': (178, 265),
             'password_input': (1108, 578),
@@ -1123,21 +1123,22 @@ class THSMacTrader:
             img_array = np.array(screenshot.convert('RGB'))
 
             # 定义蓝色按钮的颜色范围（RGB）
-            # 同花顺"立即登录"按钮的典型蓝色约为: RGB(23, 113, 230)
-            # 使用较宽的范围以容忍亮度变化
-            blue_lower = np.array([10, 90, 200])   # 深蓝
-            blue_upper = np.array([50, 140, 255])  # 浅蓝
+            # 同花顺"立即登录"按钮的实际蓝色约为: RGB(50, 140, 246)
+            # 使用较宽的范围以容忍亮度变化和不同显示器
+            blue_lower = np.array([20, 100, 200])   # 深蓝边界
+            blue_upper = np.array([80, 180, 255])   # 浅蓝边界
 
             # 创建蓝色像素掩码
             mask = np.all((img_array >= blue_lower) & (img_array <= blue_upper), axis=-1)
 
             # 计算蓝色像素占比
-            blue_percentage = np.sum(mask) / mask.size
+            blue_percentage = float(np.sum(mask)) / float(mask.size)
 
             print(f"   蓝色像素占比: {blue_percentage:.2%}")
 
-            # 如果超过30%的像素是蓝色，说明有登录按钮
-            if blue_percentage > 0.30:
+            # 如果超过15%的像素是蓝色，说明有登录按钮
+            # （按钮包含白色文字和边框，实际蓝色约占20-35%）
+            if blue_percentage > 0.15:
                 print(f"   ✓ 检测到蓝色登录按钮，状态: 未登录")
                 return False
             else:
@@ -1266,7 +1267,7 @@ class THSMacTrader:
                     scale = 3
                     inverted_gray = inverted_gray.resize(
                         (screenshot.width * scale, screenshot.height * scale),
-                        Image.LANCZOS
+                        Image.Resampling.LANCZOS
                     )
                 preprocessed_images.append(('inverted-gray-upscaled', inverted_gray))
                 # 保存调试图像
@@ -1286,7 +1287,7 @@ class THSMacTrader:
                     scale = 4  # 增大放大倍数
                     binarized = binarized.resize(
                         (screenshot.width * scale, screenshot.height * scale),
-                        Image.LANCZOS
+                        Image.Resampling.LANCZOS
                     )
                 preprocessed_images.append(('inv-white-on-black', binarized))
                 # 保存调试图像
@@ -2132,11 +2133,73 @@ class THSMacTrader:
             else:
                 print("✅ 无需验证码（或未配置验证码坐标）")
 
-            # 6. 点击确认登录按钮
+            # 6. 点击确认登录按钮并检测错误
             print(f"\n步骤 6/7: 点击确认登录...")
-            self.click_at(*self.coords['login_confirm_button'])
-            time.sleep(2)  # 等待登录处理
-            print("✅ 登录请求已提交")
+            max_captcha_retries = 3
+            captcha_retry_count = 0
+
+            while captcha_retry_count < max_captcha_retries:
+                # 点击确认登录
+                self.click_at(*self.coords['login_confirm_button'])
+                time.sleep(2)  # 等待响应
+
+                # 检测是否有验证码错误弹窗
+                captcha_error = self.check_captcha_error_popup()
+
+                if captcha_error is True:
+                    # 检测到验证码错误
+                    captcha_retry_count += 1
+                    print(f"   ❌ 验证码错误 (尝试 {captcha_retry_count}/{max_captcha_retries})")
+
+                    if captcha_retry_count >= max_captcha_retries:
+                        print(f"   ❌ 验证码重试次数已达上限")
+                        return False
+
+                    # 关闭错误弹窗
+                    if not self.handle_captcha_error_popup():
+                        print(f"   ❌ 无法关闭错误弹窗")
+                        return False
+
+                    print(f"\n🔄 重新获取验证码（第 {captcha_retry_count + 1} 次）...")
+
+                    # 重新处理验证码
+                    if manual_captcha:
+                        captcha = self.handle_captcha(manual=True)
+                    else:
+                        captcha = self.handle_captcha(manual=False, auto_confirm=True)
+
+                    if not captcha:
+                        print("   ❌ 未能获取新验证码")
+                        return False
+
+                    # 输入新验证码
+                    print("  → 输入新验证码...")
+                    captcha_coords = self.coords['captcha_input']
+                    self.click_at(int(captcha_coords[0]), int(captcha_coords[1]), clicks=1)
+                    time.sleep(0.5)
+
+                    # 清空旧验证码
+                    pyautogui.hotkey('command', 'a')
+                    time.sleep(0.2)
+                    pyautogui.press('backspace')
+                    time.sleep(0.3)
+
+                    # 输入新验证码
+                    self.clear_and_type(int(captcha_coords[0]), int(captcha_coords[1]), captcha)
+                    print(f"  ✅ 新验证码已输入: {captcha}")
+
+                    # 继续下一次尝试（会重新点击确认按钮）
+                    continue
+
+                elif captcha_error is False:
+                    # 没有错误弹窗，登录成功或需要等待
+                    print("✅ 登录请求已提交（无验证码错误）")
+                    break
+
+                else:  # captcha_error is None
+                    # 无法检测，假设成功
+                    print("⚠️  无法检测验证码错误状态，假设成功")
+                    break
 
             # 7. 验证登录结果
             print(f"\n步骤 7/7: 验证登录状态...")
@@ -2527,6 +2590,164 @@ class THSMacTrader:
                 result = self.check_timeout_popup()
                 if not result:
                     print("   ✅ 超时弹窗已关闭（ESC键成功）")
+                    return True
+
+            # 所有策略都失败
+            print("   ❌ 所有策略均未能关闭弹窗")
+            print("   💡 提示: 请检查popup_confirm_button坐标是否正确")
+            print(f"   💡 当前使用{'相对' if self.use_relative_coords else '绝对'}坐标模式")
+            return False
+
+        except Exception as e:
+            print(f"   ❌ 处理弹窗失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+    def check_captcha_error_popup(self) -> bool:
+        """
+        检测验证码错误弹窗
+
+        类似于 check_timeout_popup()，使用 OCR 识别弹窗文字
+
+        返回:
+            True: 检测到验证码错误弹窗
+            False: 无验证码错误弹窗
+            None: 检测失败
+        """
+        print("  → 检测验证码错误弹窗...")
+
+        try:
+            import pytesseract
+            from PIL import ImageEnhance
+        except ImportError:
+            print("     ⚠️  未安装pytesseract，无法使用OCR检测")
+            return None
+
+        try:
+            # 使用相同的 popup_region 坐标
+            popup_region_coords = None
+            if self.use_relative_coords and 'popup_region' in self.coords_relative:
+                popup_region_coords = self.coords_relative.get('popup_region')
+            else:
+                popup_region_coords = self.coords.get('popup_region')
+
+            if not popup_region_coords:
+                print("     ⚠️  未配置popup_region坐标")
+                return None
+
+            # 截取弹窗区域
+            if len(popup_region_coords) == 4:
+                x, y, w, h = popup_region_coords
+                if self.use_relative_coords and self.window_pos:
+                    abs_x = self.window_pos[0] + x
+                    abs_y = self.window_pos[1] + y
+                else:
+                    abs_x, abs_y = x, y
+
+                region = (int(abs_x), int(abs_y), w, h)
+                screenshot = pyautogui.screenshot(region=region)
+
+                # 保存调试截图
+                debug_path = '/tmp/ths_captcha_error_check.png'
+                screenshot.save(debug_path)
+                print(f"     → 已保存截图: {debug_path}")
+
+                # OCR识别
+                enhancer = ImageEnhance.Contrast(screenshot)
+                enhanced_img = enhancer.enhance(2.0)
+
+                custom_config = r'--oem 3 --psm 6 -l chi_sim+eng'
+                text = pytesseract.image_to_string(enhanced_img, config=custom_config)
+                text_cleaned = text.strip().replace(' ', '').replace('\n', '')
+
+                print(f"     → OCR识别到的文字: '{text_cleaned}'")
+
+                # 检测验证码错误关键字
+                error_keywords = [
+                    '验证码错误', '验证码不正确', '验证码有误',
+                    'captchaerror', 'captchaincorrect', 'wrongcaptcha',
+                    '请重新输入', '输入错误', '验证失败',
+                    '验证码输入错误', '验证码不对'
+                ]
+
+                for keyword in error_keywords:
+                    if keyword in text_cleaned.lower():
+                        print(f"     ✅ 检测到验证码错误弹窗（关键字: {keyword}）")
+                        return True
+
+                print(f"     → 未检测到验证码错误弹窗")
+                return False
+
+        except Exception as e:
+            print(f"     ❌ OCR检测失败: {e}")
+            return None
+
+        return False
+
+    def handle_captcha_error_popup(self) -> bool:
+        """
+        处理验证码错误弹窗（多策略方式）
+
+        使用多种策略关闭弹窗：
+        1. 多次点击确定按钮（有时第一次点击不生效）
+        2. 按回车键
+        3. 按ESC键
+
+        返回:
+            True: 成功关闭弹窗
+            False: 关闭失败
+        """
+        print("   🔄 处理验证码错误弹窗...")
+
+        try:
+            # 获取弹窗确定按钮坐标（优先使用相对坐标）
+            if self.use_relative_coords and 'popup_confirm_button' in self.coords_relative:
+                confirm_button_coords = self.coords_relative.get('popup_confirm_button')
+                print(f"   → 使用相对坐标: {confirm_button_coords}")
+            else:
+                confirm_button_coords = self.coords.get('popup_confirm_button')
+                print(f"   → 使用绝对坐标: {confirm_button_coords}")
+
+            if not confirm_button_coords:
+                print("   ⚠️  未配置popup_confirm_button坐标")
+                # 跳过策略1，直接使用策略2和3
+            else:
+                # 策略1: 多次点击确定按钮（有时第一次点击不生效）
+                print("   → 策略1: 点击确定按钮")
+                for attempt in range(3):
+                    print(f"   → 第 {attempt + 1} 次点击...")
+                    self.click_at(*confirm_button_coords)
+                    time.sleep(0.8)
+
+                    # 每次点击后检查弹窗是否关闭
+                    result = self.check_captcha_error_popup()
+                    if not result:
+                        print("   ✅ 验证码错误弹窗已关闭（点击按钮成功）")
+                        return True
+
+                print("   ⚠️  点击按钮未能关闭弹窗，尝试其他策略...")
+
+            # 策略2: 尝试按回车键
+            print("   → 策略2: 按回车键")
+            for attempt in range(2):
+                pyautogui.press('return')
+                time.sleep(0.8)
+
+                result = self.check_captcha_error_popup()
+                if not result:
+                    print("   ✅ 验证码错误弹窗已关闭（回车键成功）")
+                    return True
+
+            # 策略3: 尝试按ESC键
+            print("   → 策略3: 按ESC键")
+            for attempt in range(2):
+                pyautogui.press('escape')
+                time.sleep(0.8)
+
+                result = self.check_captcha_error_popup()
+                if not result:
+                    print("   ✅ 验证码错误弹窗已关闭（ESC键成功）")
                     return True
 
             # 所有策略都失败

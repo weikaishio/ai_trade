@@ -154,6 +154,12 @@ class QuantTradingSystem:
             logger.info(f"\n收到信号 {sig_name}，准备优雅退出...")
             self.running = False
 
+            # 如果再次收到信号，强制退出
+            if hasattr(self, '_shutdown_initiated'):
+                logger.warning("再次收到退出信号，强制退出...")
+                sys.exit(0)
+            self._shutdown_initiated = True
+
         # 注册信号处理
         signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
         signal.signal(signal.SIGTERM, signal_handler)  # kill命令
@@ -162,6 +168,29 @@ class QuantTradingSystem:
         """停止系统"""
         logger.info("停止量化交易系统...")
         self.running = False
+
+    def _cleanup(self) -> None:
+        """清理资源"""
+        try:
+            # 关闭trader连接
+            if self.trader_available and hasattr(self.trader, 'close'):
+                try:
+                    self.trader.close()
+                    logger.info("已关闭交易客户端连接")
+                except Exception as e:
+                    logger.error(f"关闭交易客户端失败: {e}")
+
+            # 保存风险管理数据
+            if hasattr(self.risk_manager, 'save'):
+                try:
+                    self.risk_manager.save()
+                    logger.info("已保存风险管理数据")
+                except Exception as e:
+                    logger.error(f"保存风险管理数据失败: {e}")
+
+            logger.info("资源清理完成")
+        except Exception as e:
+            logger.error(f"清理资源时出错: {e}")
 
     def prepare_trading_system(self) -> bool:
         """
@@ -557,6 +586,11 @@ class QuantTradingSystem:
 
         try:
             while self.running:
+                # 立即检查是否需要退出
+                if not self.running:
+                    logger.info("检测到退出信号，立即退出循环")
+                    break
+
                 current_time = datetime.now()
 
                 # 检查交易时间
@@ -583,7 +617,11 @@ class QuantTradingSystem:
                     else:
                         logger.info("非交易时间，等待中...")
 
-                    time.sleep(60)  # 非交易时间每分钟检查一次
+                    # 非交易时间每分钟检查一次，但支持中断
+                    for _ in range(60):
+                        if not self.running:
+                            break
+                        time.sleep(1)
                     continue
 
                 # 交易时间逻辑
@@ -626,6 +664,9 @@ class QuantTradingSystem:
             logger.error(f"自动监控异常: {e}", exc_info=True)
         finally:
             logger.info("自动监控模式已停止")
+            # 执行清理
+            self._cleanup()
+            logger.info("清理完成，程序退出")
 
     def _print_daily_summary(self) -> None:
         """打印当日摘要"""
