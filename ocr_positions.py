@@ -183,12 +183,14 @@ class PositionOCR:
                     code = parts[0].strip()
                     qty = int(parts[1].strip())
                     price = float(parts[2].strip()) if len(parts) >= 3 else 0.0
+                    cost = float(parts[3].strip()) if len(parts) >= 4 else price  # 成本价，默认使用市价
 
                     position = Position(
                         stock_code=code,
                         stock_name="",
                         available_qty=qty,
-                        current_price=price
+                        current_price=price,
+                        cost_price=cost
                     )
                     positions.append(position)
                     print(f"  ✅ 已添加: {code} - {qty}股 @ {price if price > 0 else '待定'}")
@@ -245,10 +247,19 @@ class PositionOCR:
         """
         从OCR文本中解析持仓信息
 
-        同花顺持仓表格列顺序：
-        1. 证券代码 2. 证券名称 3. 市价 4. 盈亏 5. 当日盈亏
-        6. 浮动盈亏比(%) 7. 实际数量 8. 股东会量 9. 可用余额
-        10. 冻结数量 11. 成本价 12. 市值
+        同花顺持仓表格列顺序（用户明确指定）：
+        1. 证券代码
+        2. 证券名称
+        3. 市价
+        4. 盈亏
+        5. 当日盈亏
+        6. 浮动盈亏比(%)
+        7. 实际数量
+        8. 股票余额
+        9. 可用余额
+        10. 冻结余额
+        11. 成本价
+        12. 市值
 
         参数:
             text: OCR识别的文本
@@ -259,9 +270,7 @@ class PositionOCR:
         positions = []
 
         # 股票代码模式 (6位数字)
-        code_pattern = r'[0-9]{6}'
-        # 数字模式 (整数或小数，包括负数)
-        number_pattern = r'-?[0-9]+(?:\.[0-9]+)?'
+        code_pattern = r'\b[0-9]{6}\b'
 
         # 按行处理
         lines = text.split('\n')
@@ -272,62 +281,168 @@ class PositionOCR:
                 continue
 
             # 查找股票代码
-            codes = re.findall(code_pattern, line)
-            if not codes:
+            code_match = re.search(code_pattern, line)
+            if not code_match:
                 continue
 
-            code = codes[0]
+            code = code_match.group()
 
-            # 查找所有数字（包括负数）
-            all_numbers = re.findall(number_pattern, line)
+            # 按空白字符分割所有字段
+            fields = line.split()
 
-            # 移除股票代码，并过滤股票名称中可能的小数字
+            # 提取所有数字型字段（去除股票代码和名称）
             numbers = []
-            for n in all_numbers:
-                if n == code:  # 跳过股票代码
+            for field in fields:
+                # 跳过股票代码本身
+                if field == code:
                     continue
-                # 过滤股票名称中的小整数（如"东方3"中的"3"）
-                # 如果是0-10之间的整数，且没有小数点，可能是股票名称的一部分
-                if '.' not in n and '-' not in n:
-                    try:
-                        if 0 <= int(n) <= 10:
-                            continue
-                    except ValueError:
-                        pass
-                numbers.append(n)
 
-            # 同花顺持仓表格的数字列顺序（去除股票代码后）：
-            # 实际OCR结果显示，由于"当日盈亏"可能显示为"一"或"-"被跳过
-            # 所以数字索引变为：
+                # 尝试解析为数字
+                try:
+                    # 移除千分位逗号
+                    clean_field = field.replace(',', '')
+                    # 尝试转换为浮点数
+                    num = float(clean_field)
+                    numbers.append(clean_field)
+                except ValueError:
+                    # 非数字字段（股票名称等），跳过
+                    continue
+
+            # 严格按照列顺序解析（去除股票代码和名称后）：
             # 索引0: 市价
             # 索引1: 盈亏
-            # 索引2: 浮动盈亏比(%)
-            # 索引3: 实际数量
-            # 索引4: 股东会量
-            # 索引5: 可用余额 <- 这是我们要的
-            # 索引6: 冻结数量
-            # 索引7: 成本价
-            # 索引8: 市值
+            # 索引2: 当日盈亏
+            # 索引3: 浮动盈亏比(%)
+            # 索引4: 实际数量
+            # 索引5: 股票余额
+            # 索引6: 可用余额
+            # 索引7: 冻结余额
+            # 索引8: 成本价
+            # 索引9: 市值
 
-            if len(numbers) >= 6:  # 至少需要6个数字才能取到可用余额
-                try:
-                    # 第1个数字是市价（索引0）
-                    price = float(numbers[0])
+            if len(numbers) < 9:  # 至少需要10个数字列
+                print(f"  ⚠️  数据列不完整: {code} (仅{len(numbers)}列，需要至少10列)")
+                print(f"     数字列表: {numbers}")
+                continue
 
-                    # 第6个数字是可用余额（索引5）
-                    qty = int(float(numbers[5]))
+            try:
+                # ========================================
+                # 定义字段类型和小数点修正规则
+                # ========================================
+                # 有小数的字段：市价、盈亏、当日盈亏、浮动盈亏比、可用余额、成本价、市值
+                # 无小数的字段：实际数量、股票余额、冻结余额（索引4,5,7）
 
-                    position = Position(
-                        stock_code=code,
-                        stock_name="",
-                        available_qty=qty,
-                        current_price=price
-                    )
-                    positions.append(position)
-                    print(f"  ✅ 识别: {code} - {qty}股 @ {price}")
-                except (ValueError, IndexError) as e:
-                    print(f"  ⚠️  解析失败 {code}: {e}")
-                    continue
+                def correct_decimal_point(value: float, field_name: str, is_price: bool = True) -> float:
+                    """
+                    智能修正小数点丢失
+
+                    Args:
+                        value: 原始值
+                        field_name: 字段名称（用于日志）
+                        is_price: 是否是价格类字段（价格范围0.5-999.99，其他字段范围更宽）
+
+                    Returns:
+                        修正后的值
+                    """
+                    original_value = value
+
+                    # 价格字段的合理范围
+                    if is_price:
+                        min_val, max_val = 0.5, 999.99
+                    else:
+                        min_val, max_val = 0.01, 999999.99
+
+                    # 情况1：值>=10000（明显异常，小数点向左移3位或更多）
+                    if value >= 10000:
+                        for divisor in [1000, 100, 10]:
+                            corrected = value / divisor
+                            if min_val <= corrected <= max_val:
+                                print(f"  🔧 {field_name}修正: {code} - {original_value:.2f} → {corrected:.2f} (小数点丢失,除以{divisor})")
+                                return corrected
+                        print(f"  ⚠️  {field_name}异常: {code} - {original_value:.2f} (无法自动修正)")
+                        return value
+
+                    # 情况2：值在1000-9999之间
+                    elif 1000 <= value < 10000:
+                        # 优先尝试除以1000（如19990 → 19.99，27840 → 27.84）
+                        corrected = value / 1000
+                        if min_val <= corrected <= max_val:
+                            print(f"  🔧 {field_name}修正: {code} - {original_value:.0f} → {corrected:.2f} (小数点丢失,除以1000)")
+                            return corrected
+                        # 否则尝试除以100
+                        corrected = value / 100
+                        if min_val <= corrected <= max_val:
+                            print(f"  🔧 {field_name}修正: {code} - {original_value:.2f} → {corrected:.2f} (小数点丢失,除以100)")
+                            return corrected
+                        print(f"  ⚠️  {field_name}异常: {code} - {original_value:.2f} (无法自动修正)")
+                        return value
+
+                    # 情况3：值在100-999之间，检查是否可能是小数点丢失
+                    elif 100 <= value < 1000:
+                        corrected = value / 100
+                        # 如果原值是整数（小数部分为0），且修正后在合理范围内，则修正
+                        if value == int(value) and min_val <= corrected <= (10 if is_price else 999.99):
+                            print(f"  🔧 {field_name}修正: {code} - {original_value:.0f} → {corrected:.2f} (可能的小数点丢失,除以100)")
+                            return corrected
+                        return value
+
+                    # 情况4：值过低
+                    elif is_price and value < 0.5 and value > 0:
+                        print(f"  ⚠️  {field_name}过低: {code} - {value:.2f} (可能识别错误)")
+                        return value
+
+                    return value
+
+                # ========================================
+                # 按固定索引提取并修正数据
+                # ========================================
+
+                # 索引0: 市价（有小数）
+                price = correct_decimal_point(float(numbers[0]), "市价", is_price=True)
+
+                # 索引4: 实际数量（无小数，整数）
+                qty = int(float(numbers[4]))
+
+                # 索引8: 成本价（有小数）
+                cost_price = correct_decimal_point(float(numbers[8]), "成本价", is_price=True)
+
+                # ========================================
+                # 数量合理性检查
+                # ========================================
+                if qty <= 0 or qty % 100 != 0:
+                    print(f"  ⚠️  数量异常: {code} - {qty} (不是100的倍数或<=0)")
+                    # 尝试寻找其他合理的数量（索引5或6）
+                    for idx in [5, 6]:
+                        try:
+                            alt_qty = int(float(numbers[idx]))
+                            if alt_qty > 0 and alt_qty % 100 == 0:
+                                qty = alt_qty
+                                print(f"  🔧 数量修正: {code} - 使用索引{idx}的值: {qty}")
+                                break
+                        except (ValueError, IndexError):
+                            continue
+
+                # 创建Position对象
+                position = Position(
+                    stock_code=code,
+                    stock_name="",
+                    available_qty=qty,
+                    current_price=price,
+                    cost_price=cost_price
+                )
+                positions.append(position)
+
+                # 计算盈亏用于验证
+                profit_loss = position.calculate_profit_loss()
+                profit_ratio = position.calculate_profit_loss_ratio()
+
+                # 显示识别结果
+                print(f"  ✅ 识别: {code} - {qty}股 @ 市价{price:.2f}/成本{cost_price:.2f} (盈亏:{profit_loss:.2f}元, {profit_ratio:.2%})")
+
+            except (ValueError, IndexError) as e:
+                print(f"  ⚠️  解析失败 {code}: {e}")
+                print(f"     数字列表: {numbers}")
+                continue
 
         return positions
 

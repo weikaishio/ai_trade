@@ -251,7 +251,9 @@ class QuantTradingSystem:
 
                     logger.info(f"   - {stock_name} ({stock_code}): {quantity}股 @{cost_price:.2f}元")
             else:
-                logger.info("当前无持仓或获取失败")
+                logger.warning("⚠️  未能获取持仓数据")
+                logger.info("提示: 可能是因为登录状态失效、OCR识别失败或真的没有持仓")
+                logger.info("系统已尝试自动恢复登录状态，如果问题持续请手动检查")
 
             # 3. 缓存持仓信息
             self.last_positions = positions
@@ -284,12 +286,36 @@ class QuantTradingSystem:
             return True
 
         # 检查日损失限制
-        daily_summary = self.risk_manager.get_daily_summary()
-        if daily_summary['total_profit_loss'] < -50000:  # 示例：单日亏损超过5万
-            logger.critical(f"⚠️ 单日亏损过大: {daily_summary['total_profit_loss']:.2f}元")
-            return True
+        # daily_summary = self.risk_manager.get_daily_summary()
+        # if daily_summary['total_profit_loss'] < -50000:  # 示例：单日亏损超过5万
+        #     logger.critical(f"⚠️ 单日亏损过大: {daily_summary['total_profit_loss']:.2f}元")
+        #     return True
 
         return False
+
+    def _convert_trader_position(self, trader_pos) -> Position:
+        """
+        将ths_mac_trader.Position转换为decision_engine.Position
+
+        Args:
+            trader_pos: ths_mac_trader.Position对象
+
+        Returns:
+            decision_engine.Position对象
+        """
+        # 使用OCR提取的成本价（如果有的话）
+        cost_price = getattr(trader_pos, 'cost_price', trader_pos.current_price)
+        if cost_price == 0:  # 如果成本价为0，使用当前价
+            cost_price = trader_pos.current_price
+
+        return Position(
+            code=trader_pos.stock_code,
+            name=trader_pos.stock_name,
+            quantity=trader_pos.available_qty,
+            cost_price=cost_price,
+            holding_days=0,  # OCR无法获取持仓天数
+            current_price=trader_pos.current_price
+        )
 
     def get_positions(self) -> List[Position]:
         """
@@ -324,9 +350,37 @@ class QuantTradingSystem:
                     positions = self.ocr.get_positions_automatic()
                     if positions:
                         logger.info(f"OCR自动识别成功，获取 {len(positions)} 个持仓")
-                        return positions
+                        # 转换ths_mac_trader.Position为decision_engine.Position
+                        converted_positions = [self._convert_trader_position(p) for p in positions]
+                        return converted_positions
                     else:
-                        logger.warning("OCR自动识别未获取到持仓，返回空列表")
+                        logger.warning("OCR自动识别未获取到持仓")
+
+                        # 检查是否因为登录状态失效
+                        if self.trader_available and hasattr(self.trader, 'check_login_status'):
+                            logger.info("检查登录状态...")
+                            login_status = self.trader.check_login_status(auto_detect=True)
+
+                            if not login_status:
+                                logger.warning("⚠️ 检测到未登录状态，尝试自动恢复...")
+
+                                # 尝试自动恢复系统状态
+                                if hasattr(self.trader, 'ensure_ready_for_trading'):
+                                    if self.trader.ensure_ready_for_trading():
+                                        logger.info("✅ 系统状态已恢复，重新尝试获取持仓...")
+                                        # 重新尝试获取持仓
+                                        positions = self.ocr.get_positions_automatic()
+                                        if positions:
+                                            logger.info(f"✅ 恢复后识别成功，获取 {len(positions)} 个持仓")
+                                            converted_positions = [self._convert_trader_position(p) for p in positions]
+                                            return converted_positions
+                                        else:
+                                            logger.warning("恢复后仍无法获取持仓")
+                                    else:
+                                        logger.error("❌ 系统状态恢复失败")
+                            else:
+                                logger.info("登录状态正常，可能真的没有持仓或OCR识别区域有误")
+
                         # 自动化模式下不回退到手动输入
                         return []
                 except Exception as e:
@@ -340,7 +394,23 @@ class QuantTradingSystem:
                     positions = self.ocr.get_positions_interactive()
                     if positions:
                         logger.info(f"OCR识别成功，获取 {len(positions)} 个持仓")
-                        return positions
+                        # 转换ths_mac_trader.Position为decision_engine.Position
+                        converted_positions = [self._convert_trader_position(p) for p in positions]
+                        return converted_positions
+                    else:
+                        logger.warning("OCR识别未获取到持仓")
+
+                        # 检查是否因为登录状态失效
+                        if self.trader_available and hasattr(self.trader, 'check_login_status'):
+                            logger.info("检查登录状态...")
+                            login_status = self.trader.check_login_status(auto_detect=True)
+
+                            if not login_status:
+                                logger.warning("⚠️ 检测到未登录状态")
+                                # 交互式模式下可以提示用户
+                                print("\n" + "="*60)
+                                print("⚠️  检测到未登录状态")
+                                print("="*60)
                 except Exception as e:
                     logger.warning(f"OCR识别失败: {e}")
 
@@ -348,7 +418,10 @@ class QuantTradingSystem:
         if not AUTOMATION_MODE:
             if self.trader_available and hasattr(self.trader, 'get_positions_from_input'):
                 logger.info("请手动输入持仓信息...")
-                return self.trader.get_positions_from_input()
+                positions = self.trader.get_positions_from_input()
+                # 转换ths_mac_trader.Position为decision_engine.Position
+                converted_positions = [self._convert_trader_position(p) for p in positions]
+                return converted_positions
             else:
                 logger.error("无法获取持仓数据")
                 return []
@@ -445,9 +518,32 @@ class QuantTradingSystem:
                 if self._execute_trade(signal, position):
                     executed_signals.append(signal)
             else:
-                logger.warning(f"风险检查未通过: {signal.stock_code}")
-                for error in risk_report.errors:
-                    logger.warning(f"  - {error}")
+                # 如果是交易间隔不足，自动等待后重试
+                if risk_report.wait_seconds > 0:
+                    logger.info(f"⏰ 交易间隔不足，等待 {risk_report.wait_seconds:.1f}秒...")
+                    time.sleep(risk_report.wait_seconds + 0.5)  # 额外等待0.5秒确保通过
+
+                    # 重新进行风险检查
+                    logger.info(f"等待完成，重新检查: {signal.stock_code}")
+                    risk_report = self.risk_manager.check_trade_permission(
+                        signal,
+                        position,
+                        total_portfolio_value or 0.0
+                    )
+
+                    # 再次尝试执行
+                    if risk_report.passed:
+                        if self._execute_trade(signal, position):
+                            executed_signals.append(signal)
+                    else:
+                        logger.warning(f"重新检查后仍未通过: {signal.stock_code}")
+                        for error in risk_report.errors:
+                            logger.warning(f"  - {error}")
+                else:
+                    # 其他风险问题，直接跳过
+                    logger.warning(f"风险检查未通过: {signal.stock_code}")
+                    for error in risk_report.errors:
+                        logger.warning(f"  - {error}")
 
         logger.info(f"执行完成: {len(executed_signals)}/{len(sell_signals)}")
         return executed_signals
@@ -489,7 +585,7 @@ class QuantTradingSystem:
                 code=signal.stock_code,
                 price=signal.price or 0.0,
                 quantity=signal.quantity,
-                confirm=False  # 需要手动确认
+                confirm=True  # 需要手动确认
             )
 
             if success:
@@ -712,7 +808,7 @@ def main():
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        default=True,
+        default=False,
         help="模拟运行（不实际交易）"
     )
 
@@ -723,7 +819,22 @@ def main():
         help="自动模式检查间隔（秒）"
     )
 
+    parser.add_argument(
+        "--force-trading-time",
+        action="store_true",
+        help="强制模拟交易时间（用于测试，忽略实际时间限制）"
+    )
+
     args = parser.parse_args()
+
+    # 设置强制交易时间标志（如果指定）
+    if args.force_trading_time:
+        import config_quant
+        config_quant.FORCE_TRADING_TIME = True
+        logger.warning("=" * 60)
+        logger.warning("⚠️  强制交易时间模式已启用（测试模式）")
+        logger.warning("⚠️  系统将忽略实际时间限制，始终处于交易时间")
+        logger.warning("=" * 60)
 
     # 创建日志目录
     Path("logs").mkdir(exist_ok=True)

@@ -88,6 +88,7 @@ class RiskReport:
     errors: List[str] = field(default_factory=list)
     suggestions: List[str] = field(default_factory=list)
     metrics: Dict = field(default_factory=dict)
+    wait_seconds: float = 0.0  # 需要等待的秒数（用于交易间隔限制）
 
     def to_dict(self) -> Dict:
         """转换为字典"""
@@ -401,8 +402,10 @@ class RiskManager:
         if self.last_trade_time:
             elapsed = (datetime.now() - self.last_trade_time).total_seconds()
             if elapsed < MIN_TRADE_INTERVAL:
+                wait_time = MIN_TRADE_INTERVAL - elapsed
+                report.wait_seconds = wait_time
                 report.errors.append(
-                    f"距上次交易时间过短 ({elapsed:.0f}秒 < {MIN_TRADE_INTERVAL}秒)"
+                    f"距上次交易时间过短 ({elapsed:.0f}秒 < {MIN_TRADE_INTERVAL}秒)，需等待 {wait_time:.1f}秒"
                 )
                 return False
         return True

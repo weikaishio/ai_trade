@@ -97,6 +97,9 @@ AUTO_LOGIN_IF_NEEDED = True  # True: 需要时自动登录
 PREPARE_BEFORE_TRADING = True  # 非交易时间是否准备系统（检查登录、获取持仓等）
 PREPARE_CHECK_INTERVAL = 3600  # 准备检查间隔（秒，默认1小时）
 
+# 测试配置
+FORCE_TRADING_TIME = False  # 强制模拟交易时间（仅用于测试）
+
 # 日志配置
 LOG_LEVEL = "INFO"
 LOG_FILE = "logs/quant_system.log"
@@ -245,6 +248,10 @@ def is_trading_time() -> bool:
     Returns:
         bool: 是否在交易时间
     """
+    # 如果强制交易时间模式，直接返回True（测试用）
+    if FORCE_TRADING_TIME:
+        return True
+
     from datetime import datetime, time
 
     now = datetime.now()

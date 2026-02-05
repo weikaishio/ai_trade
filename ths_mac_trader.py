@@ -49,6 +49,23 @@ class Position:
     stock_name: str      # 股票名称
     available_qty: int   # 可用数量
     current_price: float # 当前价格（可选）
+    cost_price: float = 0.0  # 成本价（可选，默认为0）
+
+    def calculate_position_value(self) -> float:
+        """计算持仓市值"""
+        return self.current_price * self.available_qty if self.current_price > 0 else 0.0
+
+    def calculate_profit_loss(self) -> float:
+        """计算盈亏金额"""
+        if self.current_price > 0 and self.cost_price > 0:
+            return (self.current_price - self.cost_price) * self.available_qty
+        return 0.0
+
+    def calculate_profit_loss_ratio(self) -> float:
+        """计算盈亏比例"""
+        if self.cost_price > 0 and self.current_price > 0:
+            return (self.current_price - self.cost_price) / self.cost_price
+        return 0.0
 
 
 class THSMacTrader:
@@ -301,17 +318,21 @@ class THSMacTrader:
         if not self.use_relative_coords:
             return (relative_x, relative_y)
 
+        # 如果窗口位置未缓存，尝试获取一次
+        # 注意：应该在activate_ths_window()时获取，这里只是fallback
         if self.window_pos is None:
+            print("  ⚠️  窗口位置未初始化，尝试获取...")
             self.window_pos = self.get_window_position()
 
         if self.window_pos is None:
-            print("警告：无法获取窗口位置，使用绝对坐标")
+            print("  ⚠️  无法获取窗口位置，切换到绝对坐标模式")
+            self.use_relative_coords = False
             return (relative_x, relative_y)
 
         win_x, win_y, _, _ = self.window_pos
         return (win_x + relative_x, win_y + relative_y)
 
-    def click_at(self, x: int, y: int, clicks: int = 1):
+    def click_at(self, x: int, y: int, clicks: int = 1, debug: bool = False):
         """
         在指定坐标点击
         如果启用相对坐标模式，会自动转换为绝对坐标
@@ -319,7 +340,12 @@ class THSMacTrader:
         # 确保输入坐标是整数
         x, y = int(x), int(y)
         abs_x, abs_y = self.get_absolute_coords(x, y)
-        print(f"  → 点击位置: ({abs_x}, {abs_y})")
+
+        if debug or self.use_relative_coords:
+            print(f"  → 点击位置: ({abs_x}, {abs_y})")
+            if self.use_relative_coords and self.window_pos:
+                print(f"     (窗口位置: {self.window_pos[0]}, {self.window_pos[1]}, 相对坐标: {x}, {y})")
+
         pyautogui.click(int(abs_x), int(abs_y), clicks=clicks)
         time.sleep(0.1)
 
@@ -527,14 +553,18 @@ class THSMacTrader:
         """
         print("正在切换到持仓标签页...")
 
-        # 点击持仓标签
-        if 'position_tab' in self.coords:
-            self.click_at(*self.coords['position_tab'])
-            time.sleep(0.5)  # 等待标签页切换
-            print("✅ 已切换到持仓标签页")
-        else:
-            print("⚠️  未配置持仓标签坐标，跳过切换")
-            print("   提示：运行校准工具添加 'position_tab' 坐标")
+        try:
+            # 点击持仓标签
+            if 'position_tab' in self.coords:
+                self.click_at(*self.coords['position_tab'])
+                time.sleep(0.5)  # 等待标签页切换
+                print("✅ 已切换到持仓标签页")
+            else:
+                print("⚠️  未配置持仓标签坐标，跳过切换")
+                print("   提示：运行校准工具添加 'position_tab' 坐标")
+        except Exception as e:
+            print(f"⚠️  切换标签页失败: {e}")
+            print("   继续执行，可能界面已经在持仓页面")
 
     def switch_to_order_tab(self):
         """
@@ -594,7 +624,7 @@ class THSMacTrader:
             print("     请手动点击对话框确认按钮，或运行校准工具添加坐标")
             time.sleep(2)  # 给用户时间手动点击
 
-    def place_order(self, order: TradeOrder, confirm: bool = False) -> bool:
+    def place_order(self, order: TradeOrder, confirm: bool = True) -> bool:
         """
         执行下单操作
 
@@ -653,7 +683,7 @@ class THSMacTrader:
         )
         return self.place_order(order, confirm)
 
-    def sell(self, code: str, price: float, quantity: int, confirm: bool = False) -> bool:
+    def sell(self, code: str, price: float, quantity: int, confirm: bool = True) -> bool:
         """
         卖出股票
         """
