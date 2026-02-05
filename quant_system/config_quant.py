@@ -60,7 +60,7 @@ MAX_SINGLE_TRADE_AMOUNT = 12000  # 单笔最大交易金额（元）
 MIN_TRADE_AMOUNT = 4000           # 最小交易金额（元）
 
 # 风控熔断
-DAILY_LOSS_LIMIT = -0.05   # 单日最大亏损5%触发熔断
+DAILY_LOSS_LIMIT = -0.2   # 单日最大亏损5%触发熔断
 CIRCUIT_BREAKER_COOLDOWN = 3600  # 熔断冷却时间（秒）
 
 # ============================================================================

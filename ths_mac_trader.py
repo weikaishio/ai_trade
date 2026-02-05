@@ -17,9 +17,20 @@ import pyautogui
 import time
 import subprocess
 import os
+import logging
 from typing import Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+
+# 配置日志
+logger = logging.getLogger(__name__)
+if not logger.handlers:
+    # 如果没有配置过，添加控制台处理器
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 # 安全设置：防止鼠标失控时可以快速移动到屏幕角落停止
 pyautogui.FAILSAFE = True
@@ -216,13 +227,13 @@ class THSMacTrader:
             if self.use_relative_coords:
                 self.window_pos = self.get_window_position()
                 if self.window_pos:
-                    print(f"  → 窗口位置: ({self.window_pos[0]}, {self.window_pos[1]}), 大小: ({self.window_pos[2]}x{self.window_pos[3]})")
+                    logger.info(f"  → 窗口位置: ({self.window_pos[0]}, {self.window_pos[1]}), 大小: ({self.window_pos[2]}x{self.window_pos[3]})")
                 else:
-                    print("  ⚠️  无法获取窗口位置，将使用绝对坐标")
+                    logger.warning("  ⚠️  无法获取窗口位置，将使用绝对坐标")
 
             return True
         except subprocess.CalledProcessError:
-            print(f"错误：无法激活 {self.app_name} 窗口，请确保应用已打开")
+            logger.error(f"错误：无法激活 {self.app_name} 窗口，请确保应用已打开")
             return False
 
     def get_window_position(self) -> Optional[Tuple[int, int, int, int]]:
@@ -321,11 +332,11 @@ class THSMacTrader:
         # 如果窗口位置未缓存，尝试获取一次
         # 注意：应该在activate_ths_window()时获取，这里只是fallback
         if self.window_pos is None:
-            print("  ⚠️  窗口位置未初始化，尝试获取...")
+            logger.warning("  ⚠️  窗口位置未初始化，尝试获取...")
             self.window_pos = self.get_window_position()
 
         if self.window_pos is None:
-            print("  ⚠️  无法获取窗口位置，切换到绝对坐标模式")
+            logger.warning("  ⚠️  无法获取窗口位置，切换到绝对坐标模式")
             self.use_relative_coords = False
             return (relative_x, relative_y)
 
@@ -342,9 +353,9 @@ class THSMacTrader:
         abs_x, abs_y = self.get_absolute_coords(x, y)
 
         if debug or self.use_relative_coords:
-            print(f"  → 点击位置: ({abs_x}, {abs_y})")
+            logger.info(f"  → 点击位置: ({abs_x}, {abs_y})")
             if self.use_relative_coords and self.window_pos:
-                print(f"     (窗口位置: {self.window_pos[0]}, {self.window_pos[1]}, 相对坐标: {x}, {y})")
+                logger.info(f"     (窗口位置: {self.window_pos[0]}, {self.window_pos[1]}, 相对坐标: {x}, {y})")
 
         pyautogui.click(int(abs_x), int(abs_y), clicks=clicks)
         time.sleep(0.1)
@@ -635,34 +646,34 @@ class THSMacTrader:
         返回：
             是否执行成功
         """
-        print(f"\n{'='*50}")
-        print(f"准备下单: {order.direction.value} {order.stock_code}")
-        print(f"价格: {order.price}, 数量: {order.quantity}")
-        print(f"{'='*50}")
+        logger.info(f"\n{'='*50}")
+        logger.info(f"准备下单: {order.direction.value} {order.stock_code}")
+        logger.info(f"价格: {order.price}, 数量: {order.quantity}")
+        logger.info(f"{'='*50}")
 
         # 1. 激活同花顺窗口
         if not self.activate_ths_window():
             return False
 
         # 2. 切换买入/卖出方向
-        print("切换交易方向...")
+        logger.info("切换交易方向...")
         self.switch_direction(order.direction)
 
         # 3. 输入股票代码
-        print(f"输入股票代码: {order.stock_code}")
+        logger.info(f"输入股票代码: {order.stock_code}")
         self.input_stock_code(order.stock_code)
 
         # 4. 输入价格
-        print(f"输入价格: {order.price}")
+        logger.info(f"输入价格: {order.price}")
         self.input_price(order.price)
 
         # 5. 输入数量
-        print(f"输入数量: {order.quantity}")
+        logger.info(f"输入数量: {order.quantity}")
         self.input_quantity(order.quantity)
 
         # 6. 确认下单
         if confirm:
-            print("⚠️  正在确认下单...")
+            logger.info("⚠️  正在确认下单...")
             self.confirm_order()
             print("✅ 下单指令已发送")
         else:
@@ -2165,7 +2176,7 @@ class THSMacTrader:
 
             # 6. 点击确认登录按钮并检测错误
             print(f"\n步骤 6/7: 点击确认登录...")
-            max_captcha_retries = 3
+            max_captcha_retries = 30
             captcha_retry_count = 0
 
             while captcha_retry_count < max_captcha_retries:

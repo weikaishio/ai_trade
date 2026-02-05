@@ -580,6 +580,19 @@ class QuantTradingSystem:
         try:
             logger.info(f"执行交易: 卖出 {signal.stock_code} {signal.quantity}股 @{signal.price}")
 
+            # 激活同花顺窗口并获取窗口位置（确保坐标正确）
+            logger.info("激活同花顺窗口...")
+            if not self.trader.activate_ths_window():
+                logger.error("❌ 无法激活同花顺窗口")
+                return False
+
+            # 检查窗口位置是否正确获取
+            if self.trader.window_pos:
+                logger.info(f"✅ 窗口位置: {self.trader.window_pos}")
+            else:
+                logger.warning("⚠️ 窗口位置未获取，可能使用绝对坐标模式")
+                logger.warning(f"   use_relative_coords = {self.trader.use_relative_coords}")
+
             # 调用THSMacTrader执行卖出
             success = self.trader.sell(
                 code=signal.stock_code,

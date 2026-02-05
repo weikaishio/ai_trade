@@ -19,6 +19,33 @@ class PositionOCR:
     def __init__(self):
         self.app_name = "同花顺"
 
+    def is_valid_stock_code(self, code: str) -> bool:
+        """
+        验证股票代码格式是否有效
+
+        参数:
+            code: 股票代码
+
+        返回:
+            是否为有效的股票代码格式
+        """
+        if not code or len(code) != 6 or not code.isdigit():
+            return False
+
+        # 上海A股：60xxxx, 688xxx, 689xxx
+        if code.startswith('60') or code.startswith('688') or code.startswith('689'):
+            return True
+
+        # 深圳A股：00xxxx, 002xxx, 300xxx, 301xxx
+        if code.startswith('00') or code.startswith('002') or code.startswith('300') or code.startswith('301'):
+            return True
+
+        # 北交所：8xxxxx, 43xxxx, 83xxxx
+        if code.startswith('8') or code.startswith('43') or code.startswith('83'):
+            return True
+
+        return False
+
     def activate_ths_window(self) -> bool:
         """激活同花顺窗口"""
         script = f'''
@@ -280,12 +307,22 @@ class PositionOCR:
             if not line:
                 continue
 
-            # 查找股票代码
-            code_match = re.search(code_pattern, line)
-            if not code_match:
+            # 查找股票代码 - 查找所有6位数字，找到第一个有效的股票代码
+            code_matches = re.findall(code_pattern, line)
+            if not code_matches:
                 continue
 
-            code = code_match.group()
+            # 验证股票代码格式
+            code = None
+            for potential_code in code_matches:
+                if self.is_valid_stock_code(potential_code):
+                    code = potential_code
+                    break
+
+            if not code:
+                # 没有找到有效的股票代码，跳过该行
+                print(f"  ⚠️  未找到有效股票代码，跳过: {line[:80]}...")
+                continue
 
             # 按空白字符分割所有字段
             fields = line.split()
