@@ -1163,22 +1163,50 @@ class THSMacTrader:
             # Convert to numpy array
             img_array = np.array(screenshot.convert('RGB'))
 
-            # 定义蓝色按钮的颜色范围（RGB）
-            # 同花顺"立即登录"按钮的实际蓝色约为: RGB(50, 140, 246)
-            # 使用较宽的范围以容忍亮度变化和不同显示器
-            blue_lower = np.array([20, 100, 200])   # 深蓝边界
-            blue_upper = np.array([80, 180, 255])   # 浅蓝边界
+            # ====================================================
+            # 颜色范围校准说明
+            # ====================================================
+            # 通过 analyze_button_color.py 分析实际截图得到：
+            #
+            # 1. 无遮罩状态（正常蓝色按钮）：
+            #    RGB(50, 140, 246) - 鲜艳的蓝色
+            #
+            # 2. 有半透明遮罩状态（实际测量）：
+            #    主色调1: RGB(122, 158, 201) 占 34%
+            #    主色调2: RGB(204, 204, 204) 占 50% (灰色背景)
+            #
+            # 3. 被遮罩覆盖的按钮特征：
+            #    - R范围: 122-170
+            #    - G范围: 158-185
+            #    - B范围: 200-204
+            #    - 整体偏浅蓝灰色
+            # ====================================================
 
-            # 创建蓝色像素掩码
-            mask = np.all((img_array >= blue_lower) & (img_array <= blue_upper), axis=-1)
+            # 范围1: 深蓝色 - 无遮罩的正常蓝色按钮
+            blue_lower_dark = np.array([20, 100, 200])
+            blue_upper_dark = np.array([100, 180, 255])
+
+            # 范围2: 浅蓝色 - 有半透明遮罩的按钮
+            # 根据实际测量 RGB(122, 158, 201) 设定范围
+            blue_lower_light = np.array([100, 140, 195])   # 下界降低到包含 RGB(122, 158, 201)
+            blue_upper_light = np.array([180, 200, 210])   # 上界调整到按钮实际颜色范围
+
+            # 创建蓝色像素掩码 (两种蓝色范围的并集)
+            mask_dark = np.all((img_array >= blue_lower_dark) & (img_array <= blue_upper_dark), axis=-1)
+            mask_light = np.all((img_array >= blue_lower_light) & (img_array <= blue_upper_light), axis=-1)
+            mask = mask_dark | mask_light
 
             # 计算蓝色像素占比
             blue_percentage = float(np.sum(mask)) / float(mask.size)
+            dark_percentage = float(np.sum(mask_dark)) / float(mask.size)
+            light_percentage = float(np.sum(mask_light)) / float(mask.size)
 
-            print(f"   蓝色像素占比: {blue_percentage:.2%}")
+            print(f"   蓝色像素占比: {blue_percentage:.2%} (深蓝: {dark_percentage:.2%}, 浅蓝: {light_percentage:.2%})")
 
-            # 如果超过15%的像素是蓝色，说明有登录按钮
-            # （按钮包含白色文字和边框，实际蓝色约占20-35%）
+            # 阈值说明：
+            # - 正常蓝色按钮约占 20-35%
+            # - 有遮罩的按钮约占 25-40% (实测34%)
+            # - 设置阈值为 15% 以确保检测到
             if blue_percentage > 0.15:
                 print(f"   ✓ 检测到蓝色登录按钮，状态: 未登录")
                 return False
@@ -1291,9 +1319,10 @@ class THSMacTrader:
                 '登录', '登陆', '立即登录', '立即登陆',
                 'login', 'sign in', 'signin', 'log in',
                 # 单字（可能只识别出部分）
-                '登', '录', '陆', '即',
+                '登', '录', '陆', '即', '立',
                 # 常见OCR错误识别
                 '党录', '党陆', '一一', '立党',  # "立即"的误识别
+                '壹即', '壹', '即刻',  # "立即"的其他误识别
             ]
 
             # ====== 准备多种图像预处理策略 ======
@@ -2467,20 +2496,43 @@ class THSMacTrader:
 
                         print(f"     → OCR识别到的文字: '{text_cleaned}'")
 
-                        # 扩展关键字列表
+                        # ====================================================
+                        # 关键逻辑区分：超时弹窗 vs 登录表单
+                        # ====================================================
+                        #
+                        # 1. 超时弹窗（Timeout Popup）- 需要关闭
+                        #    - 运行中会话过期显示的提示框
+                        #    - 内容：提示文字如"登录超时，请重新登录"
+                        #    - 有"确定"按钮需要点击关闭
+                        #    - 这个方法应该返回 True
+                        #
+                        # 2. 登录表单（Login Form Dialog）- 不需要关闭
+                        #    - 未登录状态或超时后的正常登录界面
+                        #    - 内容：表单字段（站点列表、账户、密码、验证码）
+                        #    - 这是正常界面，不是需要"关闭"的弹窗
+                        #    - 这个方法应该返回 False
+                        #
+                        # ====================================================
+
+                        # 只检查真正的超时提示关键字
                         timeout_keywords = [
                             '登录超时', '会话超时', '超时',
                             '会话过期', '登录过期', '过期',
                             '重新登录', '请重新登录',
                             '连接超时', '网络超时',
                             '登录失效', '会话失效',
-                            'timeout', 'expired', 'sessionexpired'
+                            'timeout', 'expired', 'sessionexpired',
+                            '确定', '确认', '关闭'  # 超时弹窗通常有这些按钮
                         ]
 
+                        # 检查超时关键字
                         for keyword in timeout_keywords:
                             if keyword in text_cleaned.lower():
                                 print(f"     ✅ 检测到超时弹窗（关键字: {keyword}）")
                                 return True
+
+                        # 登录表单不是"超时弹窗"，不应该返回True
+                        # 这里移除了登录表单检测逻辑
 
                         # 如果识别到了较长文字，但没有匹配关键字，输出以供调试
                         if len(text_cleaned) > 5:
@@ -2704,18 +2756,39 @@ class THSMacTrader:
 
                 print(f"     → OCR识别到的文字: '{text_cleaned}'")
 
-                # 检测验证码错误关键字
+                # ====================================================
+                # 验证码错误/提示的多种表达方式
+                # ====================================================
+                # 1. 明确的错误提示
+                # 2. 要求输入验证码的提示（说明之前输入的无效或未输入）
+                # ====================================================
+
                 error_keywords = [
+                    # 明确的错误提示
                     '验证码错误', '验证码不正确', '验证码有误',
+                    '验证码输入错误', '验证码不对',
                     'captchaerror', 'captchaincorrect', 'wrongcaptcha',
                     '请重新输入', '输入错误', '验证失败',
-                    '验证码输入错误', '验证码不对'
+
+                    # 要求输入验证码的提示（关键！）
+                    '请输入验证码', '请输入', '输入验证码',
+                    '验证码不能为空', '验证码为空',
+                    '请填写验证码', '填写验证码',
+                    'pleaseinput', 'entercaptcha', 'inputcaptcha',
+
+                    # 提示类弹窗
+                    '提示', 'tip', 'hint', 'notice'
                 ]
 
+                # 检查关键字
+                matched_keywords = []
                 for keyword in error_keywords:
                     if keyword in text_cleaned.lower():
-                        print(f"     ✅ 检测到验证码错误弹窗（关键字: {keyword}）")
-                        return True
+                        matched_keywords.append(keyword)
+
+                if matched_keywords:
+                    print(f"     ✅ 检测到验证码错误弹窗（匹配关键字: {matched_keywords[:3]}）")
+                    return True
 
                 print(f"     → 未检测到验证码错误弹窗")
                 return False

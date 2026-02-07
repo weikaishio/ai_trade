@@ -11,13 +11,73 @@ import os
 # API配置
 # ============================================================================
 
-# 模型API配置
+# 模型API配置（单一API地址）
 MODEL_API_URL = os.getenv(
     "MODEL_API_URL",
     "http://localhost:8999/comprehensive_score_custom"
 )
 MODEL_API_TIMEOUT = 30  # 超时时间（秒）
 MODEL_API_RETRY = 3  # 重试次数
+
+# 多模型API配置（各模型使用同一API，通过model_type参数区分）
+MODEL_APIS = {
+    "v2": {
+        "url": os.getenv("MODEL_V2_URL", MODEL_API_URL),
+        "timeout": 30,
+        "retry": 3,
+        "model_type": "v2"
+    },
+    "sentiment": {
+        "url": os.getenv("MODEL_SENTIMENT_URL", MODEL_API_URL),
+        "timeout": 30,
+        "retry": 3,
+        "model_type": "sentiment"
+    },
+    "improved_refined_v35": {
+        "url": os.getenv("MODEL_IMPROVED_URL", MODEL_API_URL),
+        "timeout": 30,
+        "retry": 3,
+        "model_type": "improved_refined_v35"
+    }
+}
+
+# 模型融合配置
+MODEL_FUSION_CONFIG = {
+    "enable_fusion": True,  # 是否启用融合（False则使用v2单模型）
+    "min_models_required": 2,  # 最少需要几个模型成功
+    "use_v2_only_fallback": True,  # 降级时是否使用v2单模型
+
+    # 分层策略阈值（与Go版本一致）
+    "strategy_thresholds": {
+        "short_term_high": 0.5,      # 短期模型高置信阈值
+        "v2_good": 0.5,              # V2良好阈值
+        "short_term_mid": 0.45,      # 短期模型中等阈值
+        "v2_excellent": 0.6,         # V2优秀阈值
+        "v2_superior": 0.7,          # V2极优阈值
+        "short_term_ok": 0.4,        # 短期模型可接受阈值
+        "high_consistency": 0.7,     # 高度一致性阈值
+        "final_score_high": 0.4      # 综合评分高阈值
+    },
+
+    # 动态权重配置（与Go版本一致）
+    "dynamic_weights": {
+        "high_consistency": {  # 一致性 > 0.8
+            "v2": 0.4,
+            "sentiment": 0.3,
+            "improved": 0.3
+        },
+        "mid_consistency": {   # 一致性 > 0.6
+            "v2": 0.35,
+            "sentiment": 0.35,
+            "improved": 0.3
+        },
+        "low_consistency": {   # 一致性 <= 0.6
+            "v2": 0.33,
+            "sentiment": 0.33,
+            "improved": 0.34
+        }
+    }
+}
 
 # 腾讯股票API配置
 TENCENT_STOCK_API_URL = "http://qt.gtimg.cn/q="
@@ -158,6 +218,39 @@ WHITELIST_STOCKS = [
 # ST股票特殊处理
 ST_STOCK_PREFIX = ["ST", "*ST", "S*ST"]
 ST_STOCK_MAX_RATIO = 0.1  # ST股票最大仓位10%
+
+# ============================================================================
+# 买入策略配置
+# ============================================================================
+
+# 买入策略配置
+BUY_STRATEGY_CONFIG = {
+    # 选股参数
+    "min_model_score": 45,          # 最低模型评分
+    "min_volume_ratio": 1.5,        # 最低量比
+    "max_pe_ratio": 50,             # 最高市盈率
+    "min_roe": 10,                  # 最低ROE (%)
+    "min_turnover": 1000,           # 最低成交额（万元）
+
+    # 仓位管理
+    "max_positions": 10,            # 最大持仓数
+    "max_single_position": 0.2,     # 单股最大仓位（20%）
+    "max_industry_concentration": 0.4,  # 行业最大集中度（40%）
+    "min_position_value": 5000,     # 最小持仓金额（元）
+    "cash_reserve_ratio": 0.1,      # 现金保留比例（10%）
+
+    # 买入时机
+    "buy_time_windows": [
+        ("09:35", "10:00"),         # 早盘买入窗口
+        ("14:00", "14:30"),         # 尾盘买入窗口
+    ],
+
+    # 风险控制
+    "max_daily_buy_count": 5,       # 单日最大买入笔数
+    "min_buy_interval": 60,         # 买入间隔（秒）
+    "stop_loss_ratio": -0.08,       # 止损比例（-8%）
+    "max_new_position_ratio": 0.5,  # 单日新增仓位最大占比（50%）
+}
 
 # ============================================================================
 # 测试模式配置

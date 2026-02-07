@@ -14,6 +14,7 @@ from enum import Enum
 
 try:
     from .decision_engine import TradeSignal, Position, TradeAction, Priority
+    from .buy_strategy import BuySignal
     from .config_quant import (
         MAX_DAILY_TRADES,
         MAX_POSITION_RATIO,
@@ -24,10 +25,12 @@ try:
         CIRCUIT_BREAKER_COOLDOWN,
         ST_STOCK_MAX_RATIO,
         ALERT_THRESHOLDS,
+        BUY_STRATEGY_CONFIG,
         is_trading_time
     )
 except ImportError:
     from decision_engine import TradeSignal, Position, TradeAction, Priority
+    from buy_strategy import BuySignal
     from config_quant import (
         MAX_DAILY_TRADES,
         MAX_POSITION_RATIO,
@@ -38,6 +41,7 @@ except ImportError:
         CIRCUIT_BREAKER_COOLDOWN,
         ST_STOCK_MAX_RATIO,
         ALERT_THRESHOLDS,
+        BUY_STRATEGY_CONFIG,
         is_trading_time
     )
 
@@ -135,8 +139,10 @@ class RiskManager:
 
         # 统计数据
         self.daily_trade_count = 0
+        self.daily_buy_count = 0  # 单日买入次数
         self.daily_profit_loss = 0.0
         self.last_trade_time: Optional[datetime] = None
+        self.last_buy_time: Optional[datetime] = None  # 上次买入时间
 
         # 加载今日数据
         self._load_daily_stats()
@@ -243,6 +249,225 @@ class RiskManager:
         logger.info(f"风险检查通过: {signal.stock_code} ({report.risk_level.value})")
         return report
 
+    def check_buy_permission(
+        self,
+        buy_signal: BuySignal,
+        current_positions: List[Position],
+        available_cash: float,
+        total_capital: float
+    ) -> RiskReport:
+        """
+        检查买入权限
+
+        Args:
+            buy_signal: 买入信号
+            current_positions: 当前持仓列表
+            available_cash: 可用资金
+            total_capital: 总资金
+
+        Returns:
+            RiskReport: 风险报告
+        """
+        report = RiskReport(
+            risk_level=RiskLevel.LOW,
+            passed=True
+        )
+
+        # 1. 检查熔断状态
+        if not self._check_circuit_breaker(report):
+            report.passed = False
+            report.risk_level = RiskLevel.CRITICAL
+            return report
+
+        # 2. 检查交易时间
+        if not self._check_trading_time(report):
+            report.passed = False
+            report.risk_level = RiskLevel.HIGH
+            return report
+
+        # 3. 检查单日买入次数限制
+        max_daily_buy = BUY_STRATEGY_CONFIG.get("max_daily_buy_count", 5)
+        if self.daily_buy_count >= max_daily_buy:
+            report.errors.append(
+                f"已达单日买入次数上限 ({self.daily_buy_count}/{max_daily_buy})"
+            )
+            report.passed = False
+            report.risk_level = RiskLevel.HIGH
+            return report
+
+        if self.daily_buy_count >= max_daily_buy * 0.8:
+            report.warnings.append(
+                f"买入次数接近上限 ({self.daily_buy_count}/{max_daily_buy})"
+            )
+
+        # 4. 检查买入间隔
+        min_buy_interval = BUY_STRATEGY_CONFIG.get("min_buy_interval", 60)
+        if self.last_buy_time:
+            elapsed = (datetime.now() - self.last_buy_time).total_seconds()
+            if elapsed < min_buy_interval:
+                wait_time = min_buy_interval - elapsed
+                report.wait_seconds = wait_time
+                report.errors.append(
+                    f"距上次买入时间过短 ({elapsed:.0f}秒 < {min_buy_interval}秒)，需等待 {wait_time:.1f}秒"
+                )
+                report.passed = False
+                report.risk_level = RiskLevel.MEDIUM
+                return report
+
+        # 5. 检查最大持仓数量
+        max_positions = BUY_STRATEGY_CONFIG.get("max_positions", 10)
+        current_position_count = len(current_positions)
+        if current_position_count >= max_positions:
+            report.errors.append(
+                f"已达最大持仓数量 ({current_position_count}/{max_positions})"
+            )
+            report.passed = False
+            report.risk_level = RiskLevel.HIGH
+            return report
+
+        # 检查是否已持有该股票
+        for pos in current_positions:
+            if pos.code == buy_signal.stock_code:
+                report.warnings.append(
+                    f"已持有 {buy_signal.stock_name}，建议避免重复买入"
+                )
+                # 不阻止执行，仅警告
+                break
+
+        # 6. 检查单股仓位比例
+        if total_capital > 0:
+            max_single_position = BUY_STRATEGY_CONFIG.get("max_single_position", 0.2)
+            position_ratio = buy_signal.amount / total_capital
+
+            if position_ratio > max_single_position:
+                report.errors.append(
+                    f"单股仓位比例过高 ({position_ratio:.1%} > {max_single_position:.1%})"
+                )
+                report.passed = False
+                report.risk_level = RiskLevel.HIGH
+                return report
+
+            if position_ratio > max_single_position * 0.9:
+                report.warnings.append(
+                    f"单股仓位比例接近上限 ({position_ratio:.1%})"
+                )
+
+        # 7. 检查单日新增仓位比例
+        if total_capital > 0:
+            # 计算今日已买入金额（需要从交易记录中统计）
+            today = date.today()
+            today_buy_amount = sum(
+                r.amount for r in self.trade_records
+                if r.timestamp.date() == today and r.action == "buy"
+            )
+            total_new_position = today_buy_amount + buy_signal.amount
+            new_position_ratio = total_new_position / total_capital
+
+            max_new_position_ratio = BUY_STRATEGY_CONFIG.get("max_new_position_ratio", 0.5)
+            if new_position_ratio > max_new_position_ratio:
+                report.errors.append(
+                    f"单日新增仓位比例过高 ({new_position_ratio:.1%} > {max_new_position_ratio:.1%})"
+                )
+                report.passed = False
+                report.risk_level = RiskLevel.HIGH
+                return report
+
+            if new_position_ratio > max_new_position_ratio * 0.8:
+                report.warnings.append(
+                    f"单日新增仓位接近上限 ({new_position_ratio:.1%})"
+                )
+
+        # 8. 检查买入金额
+        min_amount = BUY_STRATEGY_CONFIG.get("min_position_value", 5000)
+        if buy_signal.amount < min_amount:
+            report.errors.append(
+                f"买入金额低于最小值 ({buy_signal.amount:.2f}元 < {min_amount}元)"
+            )
+            report.passed = False
+            report.risk_level = RiskLevel.MEDIUM
+            return report
+
+        if buy_signal.amount > MAX_SINGLE_TRADE_AMOUNT:
+            report.errors.append(
+                f"买入金额超过上限 ({buy_signal.amount:.2f}元 > {MAX_SINGLE_TRADE_AMOUNT}元)"
+            )
+            report.passed = False
+            report.risk_level = RiskLevel.HIGH
+            return report
+
+        # 9. 检查资金充足性
+        # 预留5%的缓冲
+        required_cash = buy_signal.amount * 1.05
+        if available_cash < required_cash:
+            report.errors.append(
+                f"可用资金不足 (需要{required_cash:.2f}元，可用{available_cash:.2f}元)"
+            )
+            report.passed = False
+            report.risk_level = RiskLevel.CRITICAL
+            return report
+
+        # 检查是否保留足够现金储备
+        cash_reserve_ratio = BUY_STRATEGY_CONFIG.get("cash_reserve_ratio", 0.1)
+        min_cash_reserve = total_capital * cash_reserve_ratio
+        remaining_cash = available_cash - buy_signal.amount
+
+        if remaining_cash < min_cash_reserve:
+            report.warnings.append(
+                f"买入后现金储备不足 (剩余{remaining_cash:.2f}元 < {min_cash_reserve:.2f}元)"
+            )
+
+        # 10. ST股票特殊检查
+        if any(prefix in buy_signal.stock_name for prefix in ["ST", "*ST", "S*ST"]):
+            report.warnings.append(f"{buy_signal.stock_name} 为ST股票，风险较高")
+
+            # 检查ST股票总仓位
+            st_positions_value = sum(
+                pos.calculate_position_value()
+                for pos in current_positions
+                if pos.is_st_stock()
+            )
+            new_st_total = st_positions_value + buy_signal.amount
+
+            if total_capital > 0:
+                st_ratio = new_st_total / total_capital
+                if st_ratio > ST_STOCK_MAX_RATIO:
+                    report.errors.append(
+                        f"ST股票总仓位过高 ({st_ratio:.1%} > {ST_STOCK_MAX_RATIO:.1%})"
+                    )
+                    report.passed = False
+                    report.risk_level = RiskLevel.HIGH
+                    return report
+
+        # 添加建议
+        if buy_signal.priority == Priority.HIGH:
+            report.suggestions.append("高优先级买入信号，建议优先执行")
+        elif buy_signal.confidence < 0.7:
+            report.suggestions.append(
+                f"买入信号置信度较低 ({buy_signal.confidence:.1%})，建议谨慎操作"
+            )
+
+        if buy_signal.score >= 85:
+            report.suggestions.append(f"高评分股票 ({buy_signal.score:.1f}分)，质量较好")
+
+        # 设置指标
+        report.metrics = {
+            "daily_trade_count": self.daily_trade_count,
+            "daily_buy_count": self.daily_buy_count,
+            "daily_profit_loss": self.daily_profit_loss,
+            "circuit_breaker_active": self.circuit_breaker_active,
+            "signal_confidence": buy_signal.confidence,
+            "signal_score": buy_signal.score,
+            "available_cash": available_cash,
+            "buy_amount": buy_signal.amount,
+            "remaining_cash": available_cash - buy_signal.amount
+        }
+
+        logger.info(
+            f"买入风险检查通过: {buy_signal.stock_code} "
+            f"({report.risk_level.value}, 置信度{buy_signal.confidence:.1%})"
+        )
+        return report
+
     def record_trade(
         self,
         stock_code: str,
@@ -258,7 +483,7 @@ class RiskManager:
         Args:
             stock_code: 股票代码
             stock_name: 股票名称
-            action: 交易动作
+            action: 交易动作（buy/sell）
             quantity: 数量
             price: 价格
             profit_loss: 盈亏金额
@@ -278,6 +503,11 @@ class RiskManager:
         self.daily_trade_count += 1
         self.daily_profit_loss += profit_loss
         self.last_trade_time = datetime.now()
+
+        # 如果是买入操作，更新买入统计
+        if action.lower() == "buy":
+            self.daily_buy_count += 1
+            self.last_buy_time = datetime.now()
 
         # 保存记录
         self._save_trade_record(record)
@@ -540,8 +770,10 @@ class RiskManager:
         stats = {
             "date": today_str,
             "daily_trade_count": self.daily_trade_count,
+            "daily_buy_count": self.daily_buy_count,
             "daily_profit_loss": self.daily_profit_loss,
             "last_trade_time": self.last_trade_time.isoformat() if self.last_trade_time else None,
+            "last_buy_time": self.last_buy_time.isoformat() if self.last_buy_time else None,
             "circuit_breaker_active": self.circuit_breaker_active,
             "circuit_breaker_until": self.circuit_breaker_until.isoformat() if self.circuit_breaker_until else None
         }
@@ -560,17 +792,24 @@ class RiskManager:
                     stats = json.load(f)
 
                 self.daily_trade_count = stats.get("daily_trade_count", 0)
+                self.daily_buy_count = stats.get("daily_buy_count", 0)
                 self.daily_profit_loss = stats.get("daily_profit_loss", 0.0)
 
                 if stats.get("last_trade_time"):
                     self.last_trade_time = datetime.fromisoformat(stats["last_trade_time"])
+
+                if stats.get("last_buy_time"):
+                    self.last_buy_time = datetime.fromisoformat(stats["last_buy_time"])
 
                 self.circuit_breaker_active = stats.get("circuit_breaker_active", False)
 
                 if stats.get("circuit_breaker_until"):
                     self.circuit_breaker_until = datetime.fromisoformat(stats["circuit_breaker_until"])
 
-                logger.info(f"加载当日统计: 交易{self.daily_trade_count}次，盈亏{self.daily_profit_loss:.2f}元")
+                logger.info(
+                    f"加载当日统计: 交易{self.daily_trade_count}次 "
+                    f"(其中买入{self.daily_buy_count}次)，盈亏{self.daily_profit_loss:.2f}元"
+                )
 
             except Exception as e:
                 logger.error(f"加载当日统计失败: {e}")

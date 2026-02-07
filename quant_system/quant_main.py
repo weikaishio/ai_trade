@@ -29,6 +29,7 @@ try:
     from .model_client import ModelClient
     from .decision_engine import DecisionEngine, Position, TradeSignal
     from .risk_manager import RiskManager
+    from .buy_strategy import BuyStrategy, BuySignal, BuyTiming
     from .config_quant import (
         AUTO_CHECK_INTERVAL,
         POSITION_REFRESH_INTERVAL,
@@ -49,6 +50,7 @@ except ImportError:
     from model_client import ModelClient
     from decision_engine import DecisionEngine, Position, TradeSignal
     from risk_manager import RiskManager
+    from buy_strategy import BuyStrategy, BuySignal, BuyTiming
     from config_quant import (
         AUTO_CHECK_INTERVAL,
         POSITION_REFRESH_INTERVAL,
@@ -114,6 +116,9 @@ class QuantTradingSystem:
         risk_data_dir = current_dir / "data" / "risk"
         risk_data_dir.mkdir(parents=True, exist_ok=True)
         self.risk_manager = RiskManager(data_dir=str(risk_data_dir))
+
+        # 初始化买入策略（使用合理的总资金）
+        self.buy_strategy = BuyStrategy(total_capital=100000.0)
 
         # 尝试导入交易客户端
         try:
@@ -545,7 +550,31 @@ class QuantTradingSystem:
                     for error in risk_report.errors:
                         logger.warning(f"  - {error}")
 
-        logger.info(f"执行完成: {len(executed_signals)}/{len(sell_signals)}")
+        logger.info(f"卖出执行完成: {len(executed_signals)}/{len(sell_signals)}")
+
+        # 如果有卖出成功，尝试买入新票
+        if executed_signals and AUTO_TRADING_ENABLED:
+            logger.info("\n" + "=" * 60)
+            logger.info("卖出完成，开始买入流程")
+            logger.info("=" * 60)
+
+            # 1. 等待卖出完成
+            logger.info("等待卖出交易完成...")
+            time.sleep(5)
+
+            # 2. 计算可用资金
+            available_cash = self._calculate_available_cash(total_portfolio_value)
+            logger.info(f"可用资金: {available_cash:.2f}元")
+
+            # 3. 生成买入信号
+            buy_signals = self._generate_buy_signals(available_cash, positions)
+
+            # 4. 执行买入
+            if buy_signals:
+                self._execute_buy_signals(buy_signals, available_cash, total_portfolio_value)
+            else:
+                logger.info("未生成买入信号")
+
         return executed_signals
 
     def _execute_trade(self, signal: TradeSignal, position: Position) -> bool:
@@ -776,6 +805,268 @@ class QuantTradingSystem:
             # 执行清理
             self._cleanup()
             logger.info("清理完成，程序退出")
+
+    def _calculate_available_cash(self, total_portfolio_value: float) -> float:
+        """
+        计算可用资金
+
+        Args:
+            total_portfolio_value: 总持仓市值
+
+        Returns:
+            可用资金（元）
+        """
+        # 假设总资金 = 持仓市值 + 可用现金
+        # 可用现金 = 总资金 * 0.3（保守估计，30%的现金仓位）
+        # 这里简化处理，实际应该从交易系统获取准确的可用资金
+        estimated_cash = total_portfolio_value * 0.3
+
+        logger.info(f"计算可用资金: 持仓市值={total_portfolio_value:.2f}元, 估算现金={estimated_cash:.2f}元")
+        return estimated_cash
+
+    def _generate_buy_signals(
+        self,
+        available_cash: float,
+        positions: List[Position]
+    ) -> List[BuySignal]:
+        """
+        生成买入信号
+
+        Args:
+            available_cash: 可用资金
+            positions: 当前持仓列表
+
+        Returns:
+            买入信号列表
+        """
+        logger.info("=" * 60)
+        logger.info("开始生成买入信号")
+        logger.info("=" * 60)
+
+        # 1. 检查买入时机
+        is_good_time, reason = BuyTiming.is_good_time_to_buy()
+        if not is_good_time:
+            logger.warning(f"当前不是买入的好时机: {reason}")
+            next_window = BuyTiming.get_next_buy_window()
+            if next_window:
+                logger.info(f"下一个买入窗口: {next_window.strftime('%Y-%m-%d %H:%M')}")
+            return []
+
+        logger.info(f"买入时机判断: {reason}")
+
+        # 2. 调用买入策略生成信号
+        try:
+            buy_signals = self.buy_strategy.generate_buy_signals(
+                available_cash=available_cash,
+                current_positions=positions,
+                stock_pool=None,  # 使用默认股票池
+                max_buy_count=3   # 最多买入3只
+            )
+
+            if buy_signals:
+                logger.info(f"成功生成 {len(buy_signals)} 个买入信号")
+            else:
+                logger.info("未生成买入信号")
+
+            return buy_signals
+
+        except Exception as e:
+            logger.error(f"生成买入信号失败: {e}", exc_info=True)
+            return []
+
+    def _execute_buy_signals(
+        self,
+        buy_signals: List[BuySignal],
+        available_cash: float,
+        total_capital: float
+    ) -> None:
+        """
+        执行买入信号列表
+
+        Args:
+            buy_signals: 买入信号列表
+            available_cash: 可用资金
+            total_capital: 总资金
+        """
+        logger.info("=" * 60)
+        logger.info(f"开始执行买入操作，共 {len(buy_signals)} 个信号")
+        logger.info("=" * 60)
+
+        executed_count = 0
+        failed_count = 0
+
+        for i, signal in enumerate(buy_signals, 1):
+            logger.info(f"\n处理第 {i}/{len(buy_signals)} 个买入信号: {signal.stock_code}")
+
+            # 执行单笔买入
+            success = self._execute_single_buy(signal, available_cash, total_capital)
+
+            if success:
+                executed_count += 1
+                # 更新可用资金
+                available_cash -= signal.amount
+                logger.info(f"买入成功，剩余可用资金: {available_cash:.2f}元")
+
+                # 交易间隔
+                if i < len(buy_signals):
+                    logger.info("等待交易间隔...")
+                    time.sleep(2)
+            else:
+                failed_count += 1
+                logger.warning(f"买入失败: {signal.stock_code}")
+
+        logger.info("=" * 60)
+        logger.info(f"买入执行完成: 成功{executed_count}笔，失败{failed_count}笔")
+        logger.info("=" * 60)
+
+    def _execute_single_buy(
+        self,
+        signal: BuySignal,
+        available_cash: float,
+        total_capital: float
+    ) -> bool:
+        """
+        执行单笔买入
+
+        Args:
+            signal: 买入信号
+            available_cash: 可用资金
+            total_capital: 总资金
+
+        Returns:
+            是否执行成功
+        """
+        # 获取当前持仓（需要重新获取以获取最新状态）
+        current_positions = self.last_positions or []
+
+        # 1. 风险检查
+        logger.info(f"执行买入风险检查: {signal.stock_code}")
+        risk_report = self.risk_manager.check_buy_permission(
+            buy_signal=signal,
+            current_positions=current_positions,
+            available_cash=available_cash,
+            total_capital=total_capital
+        )
+
+        # 输出风险报告
+        self._print_buy_signal_risk_report(signal, risk_report)
+
+        # 2. 检查是否通过
+        if not risk_report.passed:
+            # 如果是买入间隔不足，自动等待后重试
+            if risk_report.wait_seconds > 0:
+                logger.info(f"⏰ 买入间隔不足，等待 {risk_report.wait_seconds:.1f}秒...")
+                time.sleep(risk_report.wait_seconds + 0.5)
+
+                # 重新进行风险检查
+                logger.info(f"等待完成，重新检查: {signal.stock_code}")
+                risk_report = self.risk_manager.check_buy_permission(
+                    buy_signal=signal,
+                    current_positions=current_positions,
+                    available_cash=available_cash,
+                    total_capital=total_capital
+                )
+
+                if not risk_report.passed:
+                    logger.warning(f"重新检查后仍未通过: {signal.stock_code}")
+                    for error in risk_report.errors:
+                        logger.warning(f"  - {error}")
+                    return False
+            else:
+                # 其他风险问题，直接跳过
+                logger.warning(f"买入风险检查未通过: {signal.stock_code}")
+                for error in risk_report.errors:
+                    logger.warning(f"  - {error}")
+                return False
+
+        # 3. 执行买入
+        if self.dry_run or self.test_mode:
+            logger.info(f"[模拟] 买入 {signal.stock_code} {signal.stock_name} {signal.quantity}股 @{signal.price:.2f}元")
+            # 记录模拟交易
+            self.risk_manager.record_trade(
+                stock_code=signal.stock_code,
+                stock_name=signal.stock_name,
+                action="simulated_buy",
+                quantity=signal.quantity,
+                price=signal.price,
+                profit_loss=0.0
+            )
+            return True
+
+        # 实际交易
+        if not self.trader_available:
+            logger.error("交易客户端不可用")
+            return False
+
+        try:
+            logger.info(f"执行买入交易: {signal.stock_code} {signal.quantity}股 @{signal.price:.2f}元")
+
+            # 激活同花顺窗口
+            logger.info("激活同花顺窗口...")
+            if not self.trader.activate_ths_window():
+                logger.error("❌ 无法激活同花顺窗口")
+                return False
+
+            # 检查窗口位置
+            if self.trader.window_pos:
+                logger.info(f"✅ 窗口位置: {self.trader.window_pos}")
+            else:
+                logger.warning("⚠️ 窗口位置未获取，可能使用绝对坐标模式")
+
+            # 调用THSMacTrader执行买入
+            success = self.trader.buy(
+                code=signal.stock_code,
+                price=signal.price,
+                quantity=signal.quantity,
+                confirm=True  # 需要手动确认
+            )
+
+            if success:
+                # 记录交易
+                self.risk_manager.record_trade(
+                    stock_code=signal.stock_code,
+                    stock_name=signal.stock_name,
+                    action="buy",
+                    quantity=signal.quantity,
+                    price=signal.price,
+                    profit_loss=0.0
+                )
+                logger.info(f"✅ 买入成功: {signal.stock_code}")
+                return True
+            else:
+                logger.error(f"❌ 买入失败: {signal.stock_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"执行买入交易异常: {e}", exc_info=True)
+            return False
+
+    def _print_buy_signal_risk_report(self, signal: BuySignal, risk_report) -> None:
+        """打印买入信号风险报告"""
+        print("\n" + "=" * 60)
+        print(f"股票: {signal.stock_name} ({signal.stock_code})")
+        print(f"动作: BUY (优先级: {signal.priority.value})")
+        print(f"数量: {signal.quantity}股 @ {signal.price:.2f}元")
+        print(f"金额: {signal.amount:.2f}元")
+        print(f"评分: {signal.score:.1f} | 置信度: {signal.confidence:.1%}")
+        print(f"\n买入理由:")
+        for i, reason in enumerate(signal.reasons[:3], 1):
+            print(f"  {i}. {reason}")
+        print(f"\n风险评估: {risk_report.risk_level.value.upper()}")
+        print(f"是否通过: {'是' if risk_report.passed else '否'}")
+        if risk_report.warnings:
+            print(f"警告:")
+            for warning in risk_report.warnings:
+                print(f"  - {warning}")
+        if risk_report.errors:
+            print(f"错误:")
+            for error in risk_report.errors:
+                print(f"  - {error}")
+        if risk_report.suggestions:
+            print(f"建议:")
+            for suggestion in risk_report.suggestions:
+                print(f"  - {suggestion}")
+        print("=" * 60)
 
     def _print_daily_summary(self) -> None:
         """打印当日摘要"""

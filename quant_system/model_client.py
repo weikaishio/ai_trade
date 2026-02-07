@@ -20,7 +20,15 @@ try:
         MODEL_API_RETRY,
         CACHE_ENABLED,
         CACHE_TTL,
+        MODEL_APIS,
+        MODEL_FUSION_CONFIG,
         get_decision_level
+    )
+    from .model_fusion import (
+        ModelFusionEngine,
+        FusionResult,
+        ModelType,
+        ModelScore as FusionModelScore
     )
 except ImportError:
     from config_quant import (
@@ -29,7 +37,15 @@ except ImportError:
         MODEL_API_RETRY,
         CACHE_ENABLED,
         CACHE_TTL,
+        MODEL_APIS,
+        MODEL_FUSION_CONFIG,
         get_decision_level
+    )
+    from model_fusion import (
+        ModelFusionEngine,
+        FusionResult,
+        ModelType,
+        ModelScore as FusionModelScore
     )
 
 # 配置日志
@@ -78,7 +94,8 @@ class ModelClient:
         self,
         api_url: str = MODEL_API_URL,
         enable_cache: bool = CACHE_ENABLED,
-        cache_ttl: int = CACHE_TTL
+        cache_ttl: int = CACHE_TTL,
+        enable_fusion: bool = None
     ):
         """
         初始化模型客户端
@@ -87,12 +104,29 @@ class ModelClient:
             api_url: 模型API地址
             enable_cache: 是否启用缓存
             cache_ttl: 缓存有效期（秒）
+            enable_fusion: 是否启用模型融合（None则使用配置）
         """
         self.api_url = api_url
         self.timeout = MODEL_API_TIMEOUT
         self.enable_cache = enable_cache
         self.cache_ttl = cache_ttl
         self._cache: Dict[str, Tuple[ModelScore, datetime]] = {}
+        self._fusion_cache: Dict[str, Tuple[FusionResult, datetime]] = {}
+
+        # 模型融合配置
+        self.fusion_config = MODEL_FUSION_CONFIG
+        self.enable_fusion = (
+            enable_fusion if enable_fusion is not None
+            else self.fusion_config.get("enable_fusion", True)
+        )
+
+        # 创建融合引擎
+        if self.enable_fusion:
+            self.fusion_engine = ModelFusionEngine(self.fusion_config)
+            logger.info("模型融合已启用")
+        else:
+            self.fusion_engine = None
+            logger.info("模型融合已禁用，使用v2单模型")
 
         # 配置请求会话（支持重试）
         self.session = requests.Session()
@@ -117,7 +151,7 @@ class ModelClient:
         use_cache: bool = True
     ) -> Optional[ModelScore]:
         """
-        获取股票综合评分
+        获取股票综合评分（支持融合评分，保持向后兼容）
 
         Args:
             stock_code: 股票代码
@@ -129,34 +163,54 @@ class ModelClient:
         Returns:
             ModelScore对象，失败返回None
         """
+        # 如果启用融合，使用融合评分
+        if self.enable_fusion:
+            fusion_result = self.get_fusion_score(stock_code, use_cache)
+            if fusion_result:
+                # 转换为旧格式 ModelScore
+                return self._convert_fusion_to_model_score(
+                    stock_code, fusion_result
+                )
+            else:
+                logger.warning(f"融合评分失败，尝试v2单模型: {stock_code}")
+                # 降级尝试v2单模型
+                return self._get_v2_legacy_score(stock_code, use_cache)
+        else:
+            # 未启用融合，使用原有逻辑（v2单模型）
+            return self._get_v2_legacy_score(stock_code, use_cache)
+
+    def _get_v2_legacy_score(
+        self,
+        stock_code: str,
+        use_cache: bool = True
+    ) -> Optional[ModelScore]:
+        """
+        原有的v2单模型评分方法（保持向后兼容）
+
+        Args:
+            stock_code: 股票代码
+            use_cache: 是否使用缓存
+
+        Returns:
+            ModelScore对象或None
+        """
         # 检查缓存
-        cache_key = self._generate_cache_key(
-            stock_code, current_price, holding_days, profit_loss_ratio
-        )
+        cache_key = f"legacy_{stock_code}"
 
         if use_cache and self.enable_cache:
             cached_score = self._get_from_cache(cache_key)
             if cached_score:
-                logger.debug(f"从缓存获取 {stock_code} 评分")
+                logger.debug(f"从缓存获取 {stock_code} v2评分")
                 return cached_score
 
         try:
             # 构造请求数据
-            # 注意：API期望的格式是 {"codes": ["600483"], "model_type": "sentiment"}
             request_data = {
-                "codes": [stock_code],  # 必须是数组格式
-                "model_type": "v2"  # 使用默认模型类型
+                "codes": [stock_code],
+                "model_type": "v2"
             }
 
-            # 注意：当前API不支持这些参数，它们被忽略
-            # if current_price is not None:
-            #     request_data["current_price"] = current_price
-            # if holding_days is not None:
-            #     request_data["holding_days"] = holding_days
-            # if profit_loss_ratio is not None:
-            #     request_data["profit_loss_ratio"] = profit_loss_ratio
-
-            logger.debug(f"请求模型评分: {request_data}")
+            logger.debug(f"请求v2模型评分: {request_data}")
 
             # 发起请求
             response = self.session.post(
@@ -176,23 +230,75 @@ class ModelClient:
                     self._save_to_cache(cache_key, model_score)
 
                 logger.info(
-                    f"成功获取 {stock_code} 评分: {model_score.score:.2f} "
+                    f"成功获取 {stock_code} v2评分: {model_score.score:.2f} "
                     f"({model_score.recommendation}, 置信度: {model_score.confidence:.2%})"
                 )
                 return model_score
             else:
-                logger.warning(f"解析 {stock_code} 评分失败")
+                logger.warning(f"解析 {stock_code} v2评分失败")
                 return None
 
         except requests.exceptions.Timeout:
-            logger.error(f"请求 {stock_code} 评分超时")
+            logger.error(f"请求 {stock_code} v2评分超时")
             return None
         except requests.exceptions.RequestException as e:
-            logger.error(f"请求 {stock_code} 评分失败: {e}")
+            logger.error(f"请求 {stock_code} v2评分失败: {e}")
             return None
         except Exception as e:
-            logger.error(f"获取 {stock_code} 评分异常: {e}", exc_info=True)
+            logger.error(f"获取 {stock_code} v2评分异常: {e}", exc_info=True)
             return None
+
+    def _convert_fusion_to_model_score(
+        self,
+        stock_code: str,
+        fusion_result: FusionResult
+    ) -> ModelScore:
+        """
+        将融合结果转换为旧格式 ModelScore（向后兼容）
+
+        Args:
+            stock_code: 股票代码
+            fusion_result: 融合结果
+
+        Returns:
+            ModelScore对象
+        """
+        # 提取各模型评分
+        v2_score = fusion_result.model_scores.get(ModelType.V2)
+        sentiment_score = fusion_result.model_scores.get(ModelType.SENTIMENT)
+        improved_score = fusion_result.model_scores.get(ModelType.IMPROVED)
+
+        # 构建因子字典
+        factors = {
+            "v2_score": v2_score.score if v2_score else 0.0,
+            "sentiment_score": sentiment_score.score if sentiment_score else 0.0,
+            "improved_score": improved_score.score if improved_score else 0.0,
+            "consistency": fusion_result.consistency,
+            "strategy": fusion_result.strategy_name,
+            "passed_filter": fusion_result.passed_filter,
+            "filter_details": fusion_result.filter_details
+        }
+
+        # 如果有原始数据，也添加进去
+        if v2_score:
+            factors.update({
+                "limit_up_prob": v2_score.raw_data.get("limit_up_prob", 0),
+                "downside_risk_prob": v2_score.raw_data.get("downside_risk_prob", 0),
+                "chanlun_risk_prob": v2_score.raw_data.get("chanlun_risk_prob", 0),
+                "short_term_risk": v2_score.raw_data.get("short_term_risk", 0)
+            })
+
+        # 创建旧格式 ModelScore
+        model_score = ModelScore(
+            stock_code=stock_code,
+            score=fusion_result.total_score,  # 0-100范围
+            recommendation=fusion_result.recommendation,
+            confidence=fusion_result.consistency,  # 使用一致性作为置信度
+            factors=factors,
+            timestamp=datetime.now()
+        )
+
+        return model_score
 
     def get_batch_scores(
         self,
@@ -403,6 +509,293 @@ class ModelClient:
         except Exception as e:
             logger.error(f"模型API健康检查异常: {e}")
             return False
+
+    def get_single_model_score(
+        self,
+        stock_code: str,
+        model_type: str,
+        use_cache: bool = True
+    ) -> Optional[FusionModelScore]:
+        """
+        获取单个模型的评分
+
+        Args:
+            stock_code: 股票代码
+            model_type: 模型类型 (v2, sentiment, improved_refined_v35)
+            use_cache: 是否使用缓存
+
+        Returns:
+            FusionModelScore对象或None
+        """
+        # 检查缓存
+        cache_key = f"{stock_code}_{model_type}"
+        if use_cache and self.enable_cache:
+            cached = self._get_single_model_from_cache(cache_key)
+            if cached:
+                logger.debug(f"从缓存获取 {stock_code} {model_type} 评分")
+                return cached
+
+        try:
+            # 获取模型配置
+            model_config = MODEL_APIS.get(model_type)
+            if not model_config:
+                logger.error(f"未知的模型类型: {model_type}")
+                return None
+
+            # 构造请求
+            request_data = {
+                "codes": [stock_code],
+                "model_type": model_config["model_type"]
+            }
+
+            api_url = model_config["url"]
+            timeout = model_config["timeout"]
+
+            logger.debug(f"请求 {model_type} 模型评分: {request_data}")
+
+            # 发起请求
+            response = self.session.post(
+                api_url,
+                json=request_data,
+                timeout=timeout
+            )
+            response.raise_for_status()
+
+            # 解析响应
+            result = response.json()
+            result_list = result.get("result", [])
+
+            if not result_list:
+                logger.warning(f"{stock_code} {model_type} 评分结果为空")
+                return None
+
+            # 查找对应股票的结果
+            stock_result = None
+            for item in result_list:
+                item_code = str(item.get("code", "")).zfill(6)
+                if item_code == stock_code or item_code == stock_code.lstrip("0"):
+                    stock_result = item
+                    break
+
+            if not stock_result:
+                logger.warning(f"未找到 {stock_code} {model_type} 评分")
+                return None
+
+            # 提取评分（归一化到0-1）
+            # total_score 范围是 0-100
+            total_score = float(stock_result.get("total_score", 0))
+            normalized_score = total_score / 100.0
+
+            # 使用 limit_up_prob 作为置信度
+            confidence = float(stock_result.get("limit_up_prob", 0.5))
+
+            # 创建模型评分对象
+            model_score = FusionModelScore(
+                model_type=ModelType(model_type),
+                score=normalized_score,
+                confidence=confidence,
+                raw_data=stock_result
+            )
+
+            # 缓存结果
+            if self.enable_cache:
+                self._save_single_model_to_cache(cache_key, model_score)
+
+            logger.info(
+                f"{model_type} 模型评分: {stock_code} = {total_score:.2f} "
+                f"(归一化: {normalized_score:.3f}, 置信度: {confidence:.2%})"
+            )
+
+            return model_score
+
+        except requests.exceptions.Timeout:
+            logger.error(f"请求 {stock_code} {model_type} 评分超时")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"请求 {stock_code} {model_type} 评分失败: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"获取 {stock_code} {model_type} 评分异常: {e}", exc_info=True)
+            return None
+
+    def get_multi_model_scores(
+        self,
+        stock_code: str,
+        model_types: Optional[List[str]] = None,
+        use_cache: bool = True
+    ) -> Dict[str, Optional[FusionModelScore]]:
+        """
+        获取多个模型的评分
+
+        Args:
+            stock_code: 股票代码
+            model_types: 模型类型列表（None则使用全部）
+            use_cache: 是否使用缓存
+
+        Returns:
+            {模型类型: FusionModelScore对象} 字典
+        """
+        if model_types is None:
+            model_types = ["v2", "sentiment", "improved_refined_v35"]
+
+        results = {}
+        for model_type in model_types:
+            score = self.get_single_model_score(stock_code, model_type, use_cache)
+            results[model_type] = score
+
+        return results
+
+    def get_fusion_score(
+        self,
+        stock_code: str,
+        use_cache: bool = True
+    ) -> Optional[FusionResult]:
+        """
+        获取融合后的综合评分
+
+        Args:
+            stock_code: 股票代码
+            use_cache: 是否使用缓存
+
+        Returns:
+            FusionResult对象或None
+        """
+        # 如果未启用融合，降级到v2单模型
+        if not self.enable_fusion:
+            logger.debug(f"融合已禁用，使用v2单模型: {stock_code}")
+            return self._get_v2_fallback_score(stock_code, use_cache)
+
+        # 检查缓存
+        cache_key = f"fusion_{stock_code}"
+        if use_cache and self.enable_cache:
+            cached = self._get_fusion_from_cache(cache_key)
+            if cached:
+                logger.debug(f"从缓存获取 {stock_code} 融合评分")
+                return cached
+
+        # 获取多模型评分
+        model_scores_dict = self.get_multi_model_scores(
+            stock_code,
+            model_types=["v2", "sentiment", "improved_refined_v35"],
+            use_cache=use_cache
+        )
+
+        # 转换为 ModelType 键的字典
+        fusion_scores = {}
+        for model_type_str, score in model_scores_dict.items():
+            if score:
+                fusion_scores[ModelType(model_type_str)] = score
+
+        # 检查最少模型数量
+        min_required = self.fusion_config.get("min_models_required", 2)
+        if len(fusion_scores) < min_required:
+            logger.warning(
+                f"{stock_code} 可用模型数量不足 ({len(fusion_scores)}/{min_required})"
+            )
+
+            # 降级处理
+            if self.fusion_config.get("use_v2_only_fallback", True):
+                logger.info(f"降级到v2单模型: {stock_code}")
+                return self._get_v2_fallback_score(stock_code, use_cache)
+            else:
+                return None
+
+        # 执行融合
+        try:
+            fusion_result = self.fusion_engine.fuse(fusion_scores)
+
+            # 缓存结果
+            if self.enable_cache:
+                self._save_fusion_to_cache(cache_key, fusion_result)
+
+            return fusion_result
+
+        except Exception as e:
+            logger.error(f"融合评分失败 {stock_code}: {e}", exc_info=True)
+
+            # 降级处理
+            if self.fusion_config.get("use_v2_only_fallback", True):
+                logger.info(f"融合失败，降级到v2单模型: {stock_code}")
+                return self._get_v2_fallback_score(stock_code, use_cache)
+            else:
+                return None
+
+    def _get_v2_fallback_score(
+        self,
+        stock_code: str,
+        use_cache: bool = True
+    ) -> Optional[FusionResult]:
+        """
+        降级方案：使用v2单模型
+
+        Args:
+            stock_code: 股票代码
+            use_cache: 是否使用缓存
+
+        Returns:
+            FusionResult对象或None（模拟融合结果格式）
+        """
+        v2_score = self.get_single_model_score(stock_code, "v2", use_cache)
+
+        if not v2_score:
+            return None
+
+        # 构造模拟的融合结果
+        model_scores = {ModelType.V2: v2_score}
+        total_score = v2_score.score * 100
+
+        fusion_result = FusionResult(
+            final_score=v2_score.score,
+            consistency=1.0,  # 单模型一致性为1
+            strategy_name="v2单模型（降级）",
+            model_scores=model_scores,
+            total_score=total_score,
+            recommendation=self._get_recommendation(total_score),
+            passed_filter=True,  # 单模型不做筛选
+            filter_details="v2单模型降级，跳过筛选"
+        )
+
+        return fusion_result
+
+    def _get_recommendation(self, score: float) -> str:
+        """根据评分获取推荐操作"""
+        return get_decision_level(score)
+
+    def _get_single_model_from_cache(
+        self,
+        cache_key: str
+    ) -> Optional[FusionModelScore]:
+        """从缓存获取单模型评分"""
+        if cache_key in self._cache:
+            # 复用旧缓存结构（需要转换）
+            pass
+        return None
+
+    def _save_single_model_to_cache(
+        self,
+        cache_key: str,
+        model_score: FusionModelScore
+    ) -> None:
+        """保存单模型评分到缓存（简化实现）"""
+        pass
+
+    def _get_fusion_from_cache(self, cache_key: str) -> Optional[FusionResult]:
+        """从缓存获取融合评分"""
+        if cache_key in self._fusion_cache:
+            fusion_result, cache_time = self._fusion_cache[cache_key]
+            if datetime.now() - cache_time < timedelta(seconds=self.cache_ttl):
+                return fusion_result
+            else:
+                del self._fusion_cache[cache_key]
+        return None
+
+    def _save_fusion_to_cache(
+        self,
+        cache_key: str,
+        fusion_result: FusionResult
+    ) -> None:
+        """保存融合评分到缓存"""
+        self._fusion_cache[cache_key] = (fusion_result, datetime.now())
 
 
 # ============================================================================
