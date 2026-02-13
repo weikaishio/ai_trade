@@ -304,46 +304,85 @@ class ModelClient:
         self,
         stock_codes: List[str],
         positions_data: Optional[Dict[str, Dict]] = None,
-        use_cache: bool = True
+        use_cache: bool = True,
+        use_batch_api: Optional[bool] = None
     ) -> Dict[str, Optional[ModelScore]]:
         """
-        批量获取股票评分
+        批量获取股票评分（支持批量API优化）
 
         Args:
             stock_codes: 股票代码列表
             positions_data: 持仓数据字典 {code: {current_price, holding_days, profit_loss_ratio}}
             use_cache: 是否使用缓存
+            use_batch_api: 是否使用批量API（None则使用配置）
 
         Returns:
             {股票代码: ModelScore对象} 字典
         """
-        result = {}
+        # 确定是否使用批量API
+        if use_batch_api is None:
+            use_batch_api = self.fusion_config.get(
+                "batch_processing", {}
+            ).get("enabled", True)
 
-        for code in stock_codes:
-            # 获取该股票的持仓数据
-            position_info = positions_data.get(code, {}) if positions_data else {}
+        if use_batch_api and self.enable_fusion:
+            # 使用批量API模式（性能优化）
+            logger.info(f"使用批量API模式获取 {len(stock_codes)} 只股票评分")
 
-            current_price = position_info.get("current_price")
-            holding_days = position_info.get("holding_days")
-            profit_loss_ratio = position_info.get("profit_loss_ratio")
-
-            # 获取评分
-            score = self.get_score(
-                stock_code=code,
-                current_price=current_price,
-                holding_days=holding_days,
-                profit_loss_ratio=profit_loss_ratio,
+            fusion_results = self.get_batch_fusion_scores(
+                stock_codes,
                 use_cache=use_cache
             )
 
-            result[code] = score
+            # 转换为ModelScore格式（兼容性）
+            result = {}
+            for code, fusion_result in fusion_results.items():
+                if fusion_result:
+                    result[code] = self._convert_fusion_to_model_score(
+                        code,
+                        fusion_result
+                    )
+                else:
+                    result[code] = None
 
-            # 避免请求过快
-            if score:
-                time.sleep(0.1)
+            logger.info(
+                f"批量API模式完成: "
+                f"{len([r for r in result.values() if r])}/{len(stock_codes)} 只股票成功"
+            )
 
-        logger.info(f"批量获取 {len(stock_codes)} 只股票评分完成")
-        return result
+            return result
+
+        else:
+            # 原有逐个调用模式（兼容性保留）
+            logger.info(f"使用串行模式获取 {len(stock_codes)} 只股票评分")
+
+            result = {}
+
+            for code in stock_codes:
+                # 获取该股票的持仓数据
+                position_info = positions_data.get(code, {}) if positions_data else {}
+
+                current_price = position_info.get("current_price")
+                holding_days = position_info.get("holding_days")
+                profit_loss_ratio = position_info.get("profit_loss_ratio")
+
+                # 获取评分
+                score = self.get_score(
+                    stock_code=code,
+                    current_price=current_price,
+                    holding_days=holding_days,
+                    profit_loss_ratio=profit_loss_ratio,
+                    use_cache=use_cache
+                )
+
+                result[code] = score
+
+                # 避免请求过快
+                if score:
+                    time.sleep(0.1)
+
+            logger.info(f"串行模式完成: {len(stock_codes)} 只股票评分")
+            return result
 
     def _parse_response(self, response_data: Dict, stock_code: str) -> Optional[ModelScore]:
         """
@@ -629,14 +668,20 @@ class ModelClient:
 
         Args:
             stock_code: 股票代码
-            model_types: 模型类型列表（None则使用全部）
+            model_types: 模型类型列表（None则从配置读取活动组合）
             use_cache: 是否使用缓存
 
         Returns:
             {模型类型: FusionModelScore对象} 字典
         """
         if model_types is None:
-            model_types = ["v2", "sentiment", "improved_refined_v35"]
+            # 从配置读取当前活动的模型组合
+            active_combination = self.fusion_config.get("active_combination", "default")
+            combinations = self.fusion_config.get("model_combinations", {})
+            model_types = combinations.get(
+                active_combination,
+                ["v2", "sentiment", "improved_refined_v35"]  # 默认组合
+            )
 
         results = {}
         for model_type in model_types:
@@ -673,10 +718,10 @@ class ModelClient:
                 logger.debug(f"从缓存获取 {stock_code} 融合评分")
                 return cached
 
-        # 获取多模型评分
+        # 获取多模型评分（从配置读取模型组合）
         model_scores_dict = self.get_multi_model_scores(
             stock_code,
-            model_types=["v2", "sentiment", "improved_refined_v35"],
+            model_types=None,  # None = 使用配置中的活动组合
             use_cache=use_cache
         )
 
@@ -700,9 +745,9 @@ class ModelClient:
             else:
                 return None
 
-        # 执行融合
+        # 执行融合（传递股票代码用于日志）
         try:
-            fusion_result = self.fusion_engine.fuse(fusion_scores)
+            fusion_result = self.fusion_engine.fuse(fusion_scores, stock_code=stock_code)
 
             # 缓存结果
             if self.enable_cache:
@@ -796,6 +841,329 @@ class ModelClient:
     ) -> None:
         """保存融合评分到缓存"""
         self._fusion_cache[cache_key] = (fusion_result, datetime.now())
+
+    def _call_batch_model_api(
+        self,
+        stock_codes: List[str],
+        model_type: str
+    ) -> Dict[str, Dict]:
+        """
+        批量调用模型API
+
+        Args:
+            stock_codes: 股票代码列表
+            model_type: 模型类型 (v2, sentiment, improved_refined_v35)
+
+        Returns:
+            {股票代码: API返回数据} 字典
+        """
+        try:
+            # 获取模型配置
+            model_config = MODEL_APIS.get(model_type)
+            if not model_config:
+                logger.error(f"未找到模型配置: {model_type}")
+                return {}
+
+            # 构造批量请求
+            request_data = {
+                "codes": stock_codes,
+                "model_type": model_config["model_type"]
+            }
+
+            logger.debug(
+                f"批量请求 {model_type} 模型: {len(stock_codes)} 只股票"
+            )
+
+            # 发送请求
+            response = self.session.post(
+                model_config["url"],
+                json=request_data,
+                timeout=model_config["timeout"]
+            )
+            response.raise_for_status()
+
+            # 解析响应
+            result = response.json()
+            result_list = result.get("result", [])
+
+            if not result_list:
+                logger.warning(f"批量请求 {model_type} 返回空结果")
+                return {}
+
+            # 构建代码->数据的映射
+            result_dict = {}
+            for item in result_list:
+                code = str(item.get("code", "")).zfill(6)
+                result_dict[code] = item
+
+            logger.info(
+                f"批量获取 {model_type} 评分成功: "
+                f"{len(result_dict)}/{len(stock_codes)} 只股票"
+            )
+
+            return result_dict
+
+        except requests.exceptions.Timeout:
+            logger.error(f"批量调用 {model_type} 模型超时")
+            return {}
+        except requests.exceptions.RequestException as e:
+            logger.error(f"批量调用 {model_type} 模型失败: {e}")
+            return {}
+        except Exception as e:
+            logger.error(
+                f"批量调用 {model_type} 模型异常: {e}",
+                exc_info=True
+            )
+            return {}
+
+    def get_batch_single_model_scores(
+        self,
+        stock_codes: List[str],
+        model_type: str,
+        batch_size: Optional[int] = None,
+        use_cache: bool = True
+    ) -> Dict[str, Optional[FusionModelScore]]:
+        """
+        批量获取单个模型的评分（性能优化）
+
+        Args:
+            stock_codes: 股票代码列表
+            model_type: 模型类型 (v2, sentiment, improved_refined_v35)
+            batch_size: 每批处理的股票数量（None则使用配置）
+            use_cache: 是否使用缓存
+
+        Returns:
+            {股票代码: FusionModelScore对象} 字典
+        """
+        if batch_size is None:
+            batch_size = self.fusion_config.get(
+                "batch_processing", {}
+            ).get("batch_size", 50)
+
+        results = {}
+        codes_to_fetch = []
+
+        # 1. 检查缓存
+        if use_cache and self.enable_cache:
+            for code in stock_codes:
+                cache_key = f"{code}_{model_type}"
+                cached = self._get_single_model_from_cache(cache_key)
+                if cached:
+                    results[code] = cached
+                    logger.debug(f"从缓存获取 {code} {model_type} 评分")
+                else:
+                    codes_to_fetch.append(code)
+        else:
+            codes_to_fetch = stock_codes
+
+        # 2. 分批处理未缓存的股票
+        if codes_to_fetch:
+            # 分批
+            for i in range(0, len(codes_to_fetch), batch_size):
+                batch_codes = codes_to_fetch[i:i+batch_size]
+
+                # 批量API调用
+                batch_results = self._call_batch_model_api(
+                    batch_codes,
+                    model_type
+                )
+
+                # 3. 解析响应并创建模型评分对象
+                for code in batch_codes:
+                    stock_result = batch_results.get(code)
+
+                    if not stock_result:
+                        logger.warning(f"未找到 {code} {model_type} 评分")
+                        results[code] = None
+                        continue
+
+                    try:
+                        # 提取评分（归一化到0-1）
+                        total_score = float(stock_result.get("total_score", 0))
+                        normalized_score = total_score / 100.0
+
+                        # 使用 limit_up_prob 作为置信度
+                        confidence = float(
+                            stock_result.get("limit_up_prob", 0.5)
+                        )
+
+                        # 创建模型评分对象
+                        model_score = FusionModelScore(
+                            model_type=ModelType(model_type),
+                            score=normalized_score,
+                            confidence=confidence,
+                            raw_data=stock_result
+                        )
+
+                        results[code] = model_score
+
+                        # 4. 缓存结果
+                        if self.enable_cache:
+                            cache_key = f"{code}_{model_type}"
+                            self._save_single_model_to_cache(
+                                cache_key,
+                                model_score
+                            )
+
+                    except (KeyError, ValueError, TypeError) as e:
+                        logger.error(
+                            f"解析 {code} {model_type} 评分失败: {e}"
+                        )
+                        results[code] = None
+
+        logger.info(
+            f"批量获取 {model_type} 模型评分完成: "
+            f"{len([r for r in results.values() if r])}/{len(stock_codes)} 只股票成功"
+        )
+
+        return results
+
+    def get_batch_fusion_scores(
+        self,
+        stock_codes: List[str],
+        batch_size: Optional[int] = None,
+        use_cache: bool = True
+    ) -> Dict[str, Optional[FusionResult]]:
+        """
+        批量获取融合评分（性能优化）
+
+        策略：
+        1. 批量调用v2模型API（一次获取所有股票）
+        2. 批量调用sentiment模型API
+        3. 批量调用improved_refined_v35模型API
+        4. 融合每只股票的结果
+
+        性能提升：
+        - 之前：N只股票 × 3个模型 × 17秒/次 = N×51秒
+        - 之后：3个模型 × 17秒/次 = 51秒（不论N多大）
+        - 提升：约N倍
+
+        Args:
+            stock_codes: 股票代码列表
+            batch_size: 每批处理的股票数量（None则使用配置）
+            use_cache: 是否使用缓存
+
+        Returns:
+            {股票代码: FusionResult对象} 字典
+        """
+        if batch_size is None:
+            batch_size = self.fusion_config.get(
+                "batch_processing", {}
+            ).get("batch_size", 50)
+
+        results = {}
+        codes_to_fetch = []
+
+        # 1. 检查缓存
+        if use_cache and self.enable_cache:
+            for code in stock_codes:
+                cache_key = f"fusion_{code}"
+                cached = self._get_fusion_from_cache(cache_key)
+                if cached:
+                    results[code] = cached
+                    logger.debug(f"从缓存获取 {code} 融合评分")
+                else:
+                    codes_to_fetch.append(code)
+        else:
+            codes_to_fetch = stock_codes
+
+        if not codes_to_fetch:
+            logger.info(f"所有股票均命中缓存: {len(stock_codes)} 只")
+            return results
+
+        # 2. 分批处理
+        for i in range(0, len(codes_to_fetch), batch_size):
+            batch_codes = codes_to_fetch[i:i+batch_size]
+            logger.info(
+                f"批量融合评分: 批次 {i//batch_size + 1}, "
+                f"{len(batch_codes)} 只股票"
+            )
+
+            # 3. 批量获取模型评分（从配置读取模型组合）
+            active_combination = self.fusion_config.get("active_combination", "default")
+            combinations = self.fusion_config.get("model_combinations", {})
+            model_types = combinations.get(
+                active_combination,
+                ["v2", "sentiment", "improved_refined_v35"]
+            )
+            logger.info(f"使用模型组合 '{active_combination}': {model_types}")
+            all_model_scores = {}
+
+            for model_type in model_types:
+                batch_scores = self.get_batch_single_model_scores(
+                    batch_codes,
+                    model_type,
+                    batch_size=len(batch_codes),  # 不再分批
+                    use_cache=use_cache
+                )
+                all_model_scores[model_type] = batch_scores
+
+            # 4. 融合每只股票的结果
+            for code in batch_codes:
+                # 收集该股票的所有模型评分
+                fusion_scores = {}
+
+                for model_type in model_types:
+                    score = all_model_scores[model_type].get(code)
+                    if score:
+                        fusion_scores[ModelType(model_type)] = score
+
+                # 检查最少模型数量
+                min_required = self.fusion_config.get("min_models_required", 2)
+                if len(fusion_scores) < min_required:
+                    logger.warning(
+                        f"{code} 可用模型数量不足 "
+                        f"({len(fusion_scores)}/{min_required})"
+                    )
+
+                    # 降级处理
+                    if self.fusion_config.get("use_v2_only_fallback", True):
+                        logger.info(f"降级到v2单模型: {code}")
+                        fallback_result = self._get_v2_fallback_score(
+                            code,
+                            use_cache=False  # 已经尝试过缓存了
+                        )
+                        results[code] = fallback_result
+                    else:
+                        results[code] = None
+                    continue
+
+                # 执行融合（传递股票代码用于日志）
+                try:
+                    if not self.fusion_engine:
+                        logger.error("融合引擎未初始化")
+                        results[code] = None
+                        continue
+
+                    fusion_result = self.fusion_engine.fuse(fusion_scores, stock_code=code)
+
+                    # 缓存结果
+                    if self.enable_cache:
+                        cache_key = f"fusion_{code}"
+                        self._save_fusion_to_cache(cache_key, fusion_result)
+
+                    results[code] = fusion_result
+
+                except Exception as e:
+                    logger.error(f"融合评分失败 {code}: {e}", exc_info=True)
+
+                    # 降级处理
+                    if self.fusion_config.get("use_v2_only_fallback", True):
+                        logger.info(f"融合失败，降级到v2单模型: {code}")
+                        fallback_result = self._get_v2_fallback_score(
+                            code,
+                            use_cache=False
+                        )
+                        results[code] = fallback_result
+                    else:
+                        results[code] = None
+
+        success_count = len([r for r in results.values() if r])
+        logger.info(
+            f"批量融合评分完成: {success_count}/{len(stock_codes)} 只股票成功"
+        )
+
+        return results
 
 
 # ============================================================================

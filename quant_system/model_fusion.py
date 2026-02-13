@@ -18,6 +18,10 @@ class ModelType(Enum):
     """模型类型枚举"""
     V2 = "v2"
     SENTIMENT = "sentiment"
+    IMPROVED_REFINED = "improved_refined"  # 新增: improved基础版
+    IMPROVED_V35 = "improved_refined_v35"  # 重命名: improved v35版
+
+    # 为了向后兼容，保留IMPROVED别名
     IMPROVED = "improved_refined_v35"
 
 
@@ -285,37 +289,64 @@ class ModelFusionEngine:
             f"一致性:{consistency:.2f}/综合:{final_score:.2f})"
         )
 
-    def fuse(self, model_scores: Dict[ModelType, ModelScore]) -> FusionResult:
+    def fuse(
+        self,
+        model_scores: Dict[ModelType, ModelScore],
+        stock_code: Optional[str] = None
+    ) -> FusionResult:
         """
-        执行模型融合
+        执行模型融合（灵活支持不同模型组合）
 
         Args:
             model_scores: 各模型的评分字典
+            stock_code: 股票代码（可选，用于日志）
 
         Returns:
             FusionResult融合结果对象
         """
-        # 提取各模型评分（归一化到0-1）
-        sentiment_score = model_scores.get(ModelType.SENTIMENT)
-        improved_score = model_scores.get(ModelType.IMPROVED)
-        v2_score_obj = model_scores.get(ModelType.V2)
+        # 构建日志前缀
+        log_prefix = f"[{stock_code}] " if stock_code else ""
 
-        # 默认值处理（如果某个模型缺失）
-        sentiment = sentiment_score.score if sentiment_score else 0.0
-        improved = improved_score.score if improved_score else 0.0
+        # 灵活提取各模型评分（支持不同组合）
+        # V2模型（必需）
+        v2_score_obj = model_scores.get(ModelType.V2)
         v2_score = v2_score_obj.score if v2_score_obj else 0.0
 
-        # 记录缺失的模型
-        missing_models = []
-        if sentiment_score is None:
-            missing_models.append("sentiment")
-        if improved_score is None:
-            missing_models.append("improved_refined")
-        if v2_score_obj is None:
-            missing_models.append("v2")
+        # Sentiment模型（可选）
+        sentiment_score = model_scores.get(ModelType.SENTIMENT)
+        sentiment = sentiment_score.score if sentiment_score else 0.0
 
-        if missing_models:
-            logger.warning(f"缺失模型: {', '.join(missing_models)}")
+        # Improved模型组（优先使用v35，其次refined，最后IMPROVED别名）
+        improved_score = (
+            model_scores.get(ModelType.IMPROVED_V35) or
+            model_scores.get(ModelType.IMPROVED_REFINED) or
+            model_scores.get(ModelType.IMPROVED)
+        )
+        improved = improved_score.score if improved_score else 0.0
+
+        # 仅在确实缺少所有improved变体时才警告
+        has_any_improved = any([
+            model_scores.get(ModelType.IMPROVED_V35),
+            model_scores.get(ModelType.IMPROVED_REFINED),
+            model_scores.get(ModelType.IMPROVED)
+        ])
+
+        # 记录缺失的关键模型（仅当少于2个模型时才警告）
+        available_count = sum([
+            v2_score_obj is not None,
+            sentiment_score is not None,
+            has_any_improved
+        ])
+
+        if available_count < 2:
+            missing = []
+            if not v2_score_obj:
+                missing.append("v2")
+            if not sentiment_score:
+                missing.append("sentiment")
+            if not has_any_improved:
+                missing.append("improved系列")
+            logger.warning(f"{log_prefix}模型数量不足 ({available_count}/3): 缺失 {', '.join(missing)}")
 
         # 计算模型一致性
         available_scores = [
@@ -352,8 +383,9 @@ class ModelFusionEngine:
         )
 
         logger.info(
-            f"融合结果: 评分={total_score:.2f}, 一致性={consistency:.2f}, "
-            f"策略={strategy_name}, 通过={passed}"
+            f"{log_prefix}融合结果: 评分={total_score:.2f}, 一致性={consistency:.2f}, "
+            f"策略={strategy_name} (S:{sentiment:.3f}/I:{improved:.3f}/V2:{v2_score:.3f}), "
+            f"通过={passed}"
         )
 
         return fusion_result

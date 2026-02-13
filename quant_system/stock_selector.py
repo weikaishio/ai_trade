@@ -20,7 +20,8 @@ try:
     from .config_quant import (
         BLACKLIST_STOCKS,
         ST_STOCK_PREFIX,
-        BUY_STRATEGY_CONFIG
+        BUY_STRATEGY_CONFIG,
+        STOCK_SELECTION_CONFIG
     )
 except ImportError:
     from market_data_client import MarketDataClient, StockData
@@ -28,7 +29,8 @@ except ImportError:
     from config_quant import (
         BLACKLIST_STOCKS,
         ST_STOCK_PREFIX,
-        BUY_STRATEGY_CONFIG
+        BUY_STRATEGY_CONFIG,
+        STOCK_SELECTION_CONFIG
     )
 
 logger = logging.getLogger(__name__)
@@ -530,24 +532,123 @@ class StockSelector:
 
     def _filter_by_quality(self, candidates: List[CandidateStock]) -> List[CandidateStock]:
         """
-        质量筛选
+        弹性质量筛选（三级降级策略）
 
-        筛选条件：
-        1. 综合评分 >= 配置的最低分数
-        2. 模型评分 >= 配置的最低分数（如果有）
+        策略：
+        1. 严格模式：综合评分>=56, 模型评分>=70
+        2. 宽松模式：综合评分>=40, 模型评分>=50
+        3. Top N兜底：按评分排序，强制取Top 10（评分>=30）
+
+        返回：符合质量要求的候选股票列表（至少10只）
         """
-        min_score = self.config.get("min_model_score", 70)
+        selection_config = STOCK_SELECTION_CONFIG
+        filter_mode = selection_config.get("filter_mode", "auto")
+        verbose = selection_config.get("verbose_logging", True)
 
+        # 如果候选股票太少，直接返回
+        if len(candidates) < 10:
+            if verbose:
+                logger.warning(f"候选股票数量不足10只({len(candidates)}只)，跳过质量筛选")
+            return candidates
+
+        # 模式1: 严格筛选
+        if filter_mode in ["auto", "strict"]:
+            strict = selection_config.get("strict_thresholds", {})
+            strict_filtered = self._apply_quality_filter(
+                candidates,
+                min_score=strict.get("min_score", 56),
+                min_model_score=strict.get("min_model_score", 70),
+                label="严格模式"
+            )
+
+            if len(strict_filtered) >= 10:
+                if verbose:
+                    logger.info(f"✓ 严格模式通过: {len(strict_filtered)} 只股票符合条件")
+                return strict_filtered
+            elif verbose:
+                logger.info(f"严格模式筛选结果不足: {len(strict_filtered)} 只 < 10只")
+
+        # 模式2: 宽松筛选（降级）
+        if filter_mode in ["auto", "relaxed"]:
+            relaxed = selection_config.get("relaxed_thresholds", {})
+            relaxed_filtered = self._apply_quality_filter(
+                candidates,
+                min_score=relaxed.get("min_score", 40),
+                min_model_score=relaxed.get("min_model_score", 50),
+                label="宽松模式"
+            )
+
+            if len(relaxed_filtered) >= 10:
+                if verbose:
+                    logger.warning(f"⚠ 降级到宽松模式: {len(relaxed_filtered)} 只股票符合条件")
+                return relaxed_filtered
+            elif verbose:
+                logger.info(f"宽松模式筛选结果不足: {len(relaxed_filtered)} 只 < 10只")
+
+        # 模式3: Top N 兜底（最终保障）
+        fallback = selection_config.get("fallback_config", {})
+        if not fallback.get("enabled", True):
+            logger.warning("兜底模式已禁用，返回宽松筛选结果")
+            return relaxed_filtered if filter_mode == "auto" else candidates
+
+        min_count = fallback.get("min_count", 10)
+        absolute_min_score = fallback.get("absolute_min_score", 30)
+
+        # 按评分排序
+        sorted_candidates = sorted(candidates, key=lambda c: c.score, reverse=True)
+
+        # 取Top N，但要满足绝对最低分
+        fallback_filtered = []
+        for candidate in sorted_candidates:
+            if len(fallback_filtered) >= min_count:
+                break
+            if candidate.score >= absolute_min_score:
+                fallback_filtered.append(candidate)
+
+        if verbose:
+            if fallback.get("warn_on_fallback", True):
+                logger.warning(
+                    f"⚠⚠ 触发Top N兜底模式: 强制返回Top {len(fallback_filtered)} 只股票 "
+                    f"(评分范围: {fallback_filtered[-1].score:.1f} - {fallback_filtered[0].score:.1f})"
+                )
+
+        return fallback_filtered
+
+    def _apply_quality_filter(
+        self,
+        candidates: List[CandidateStock],
+        min_score: float,
+        min_model_score: float,
+        label: str = ""
+    ) -> List[CandidateStock]:
+        """
+        应用质量筛选阈值
+
+        Args:
+            candidates: 候选股票列表
+            min_score: 最低综合评分
+            min_model_score: 最低模型评分
+            label: 筛选模式标签（用于日志）
+
+        Returns:
+            筛选后的股票列表
+        """
         filtered = []
         for candidate in candidates:
             # 综合评分检查
-            if candidate.score < min_score * 0.8:  # 综合评分要求稍低
-                logger.debug(f"过滤 {candidate.code}: 综合评分过低 ({candidate.score:.1f})")
+            if candidate.score < min_score:
+                logger.debug(
+                    f"[{label}] 过滤 {candidate.code}: "
+                    f"综合评分过低 ({candidate.score:.1f} < {min_score})"
+                )
                 continue
 
             # 模型评分检查（如果有）
-            if candidate.model_score is not None and candidate.model_score < min_score:
-                logger.debug(f"过滤 {candidate.code}: 模型评分过低 ({candidate.model_score:.1f})")
+            if candidate.model_score is not None and candidate.model_score < min_model_score:
+                logger.debug(
+                    f"[{label}] 过滤 {candidate.code}: "
+                    f"模型评分过低 ({candidate.model_score:.1f} < {min_model_score})"
+                )
                 continue
 
             filtered.append(candidate)

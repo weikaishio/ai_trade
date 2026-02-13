@@ -16,28 +16,34 @@ MODEL_API_URL = os.getenv(
     "MODEL_API_URL",
     "http://localhost:8999/comprehensive_score_custom"
 )
-MODEL_API_TIMEOUT = 30  # 超时时间（秒）
+MODEL_API_TIMEOUT = 180  # 超时时间（秒）- 支持大批量处理
 MODEL_API_RETRY = 3  # 重试次数
 
 # 多模型API配置（各模型使用同一API，通过model_type参数区分）
 MODEL_APIS = {
     "v2": {
         "url": os.getenv("MODEL_V2_URL", MODEL_API_URL),
-        "timeout": 30,
+        "timeout": 180,  # 支持大批量处理
         "retry": 3,
         "model_type": "v2"
     },
     "sentiment": {
         "url": os.getenv("MODEL_SENTIMENT_URL", MODEL_API_URL),
-        "timeout": 30,
+        "timeout": 180,  # 支持大批量处理
         "retry": 3,
         "model_type": "sentiment"
     },
-    "improved_refined_v35": {
-        "url": os.getenv("MODEL_IMPROVED_URL", MODEL_API_URL),
-        "timeout": 30,
+    "improved_refined": {
+        "url": os.getenv("MODEL_IMPROVED_REFINED_URL", MODEL_API_URL),
+        "timeout": 300,  # 支持大批量处理
         "retry": 3,
-        "model_type": "improved_refined_v35"
+        "model_type": "improved_refined"
+    },
+    "improved_refined_v21": {
+        "url": os.getenv("MODEL_IMPROVED_V35_URL", MODEL_API_URL),
+        "timeout": 300,  # 支持大批量处理
+        "retry": 3,
+        "model_type": "improved_refined_v21"
     }
 }
 
@@ -46,6 +52,14 @@ MODEL_FUSION_CONFIG = {
     "enable_fusion": True,  # 是否启用融合（False则使用v2单模型）
     "min_models_required": 2,  # 最少需要几个模型成功
     "use_v2_only_fallback": True,  # 降级时是否使用v2单模型
+
+    # 模型组合配置（可配置不同的模型组合）
+    "model_combinations": {
+        "default": ["v2", "sentiment", "improved_refined_v21"],  # 原始组合
+        "improved_series": ["v2", "improved_refined", "improved_refined_v21"],  # improved系列组合
+        "conservative": ["v2", "improved_refined_v21"],  # 保守组合（2模型）
+    },
+    "active_combination": "improved_series",  # 当前使用的组合（default | improved_series | conservative）
 
     # 分层策略阈值（与Go版本一致）
     "strategy_thresholds": {
@@ -76,12 +90,19 @@ MODEL_FUSION_CONFIG = {
             "sentiment": 0.33,
             "improved": 0.34
         }
+    },
+
+    # 批量处理配置（性能优化）
+    "batch_processing": {
+        "enabled": True,  # 是否启用批量处理
+        "batch_size": 9999,  # 每批处理的股票数量（支持一次处理所有股票）
+        "max_concurrent_batches": 3,  # 最大并发批次数（预留）
     }
 }
 
 # 腾讯股票API配置
 TENCENT_STOCK_API_URL = "http://qt.gtimg.cn/q="
-STOCK_API_TIMEOUT = 10
+STOCK_API_TIMEOUT = 60  # 支持大批量股票数据获取
 STOCK_API_RETRY = 3
 
 # ============================================================================
@@ -111,17 +132,17 @@ HOLDING_DAYS_LONG = 10     # 长期持仓阈值
 # ============================================================================
 
 # 交易限制
-MAX_DAILY_TRADES = 20      # 单日最大交易次数
+MAX_DAILY_TRADES = 40      # 单日最大交易次数
 MAX_POSITION_RATIO = 0.3   # 单只股票最大仓位比例
-MIN_TRADE_INTERVAL = 15    # 两次交易最小间隔（秒）
+MIN_TRADE_INTERVAL = 10    # 两次交易最小间隔（秒）
 
 # 资金管理
 MAX_SINGLE_TRADE_AMOUNT = 12000  # 单笔最大交易金额（元）
-MIN_TRADE_AMOUNT = 4000           # 最小交易金额（元）
+MIN_TRADE_AMOUNT = 3000           # 最小交易金额（元）
 
 # 风控熔断
 DAILY_LOSS_LIMIT = -0.2   # 单日最大亏损5%触发熔断
-CIRCUIT_BREAKER_COOLDOWN = 3600  # 熔断冷却时间（秒）
+CIRCUIT_BREAKER_COOLDOWN = 60  # 熔断冷却时间（秒）
 
 # ============================================================================
 # 交易时间配置
@@ -218,6 +239,39 @@ WHITELIST_STOCKS = [
 # ST股票特殊处理
 ST_STOCK_PREFIX = ["ST", "*ST", "S*ST"]
 ST_STOCK_MAX_RATIO = 0.1  # ST股票最大仓位10%
+
+# ============================================================================
+# 选股策略配置
+# ============================================================================
+
+# 弹性筛选配置（解决质量筛选过严导致0只股票的问题）
+STOCK_SELECTION_CONFIG = {
+    # 筛选模式: strict(严格), relaxed(宽松), top_n(仅排序), auto(自动降级)
+    "filter_mode": "auto",  # auto: 严格 → 宽松 → Top N 三级降级
+
+    # 严格模式阈值（初始尝试）
+    "strict_thresholds": {
+        "min_score": 56,       # 综合评分最低56分
+        "min_model_score": 70  # 模型评分最低70分
+    },
+
+    # 宽松模式阈值（降级后）
+    "relaxed_thresholds": {
+        "min_score": 40,       # 综合评分最低40分
+        "min_model_score": 50  # 模型评分最低50分
+    },
+
+    # Top N 兜底模式（最终保障）
+    "fallback_config": {
+        "enabled": True,           # 是否启用兜底模式
+        "min_count": 10,           # 最少返回10只股票
+        "absolute_min_score": 30,  # 绝对最低分（低于此分不选）
+        "warn_on_fallback": True   # 触发兜底时发出警告
+    },
+
+    # 日志配置
+    "verbose_logging": True    # 详细日志模式（显示降级过程）
+}
 
 # ============================================================================
 # 买入策略配置

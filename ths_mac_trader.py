@@ -210,9 +210,14 @@ class THSMacTrader:
         print("  ⚠️  未找到同花顺进程（使用默认名称）")
         return "同花顺"  # 默认值
 
-    def activate_ths_window(self) -> bool:
+    def activate_ths_window(self, force_update_position: bool = False) -> bool:
         """
         激活同花顺窗口到前台并更新窗口位置
+
+        Args:
+            force_update_position: 是否强制更新窗口位置
+                                  False: 只在 window_pos 为 None 时更新（默认，避免重复获取）
+                                  True: 总是更新窗口位置
         """
         script = f'''
         tell application "{self.app_name}"
@@ -223,13 +228,20 @@ class THSMacTrader:
             subprocess.run(['osascript', '-e', script], check=True, capture_output=True)
             time.sleep(0.5)  # 等待窗口激活
 
-            # 更新窗口位置
+            # 更新窗口位置（条件性）
             if self.use_relative_coords:
-                self.window_pos = self.get_window_position()
-                if self.window_pos:
-                    logger.info(f"  → 窗口位置: ({self.window_pos[0]}, {self.window_pos[1]}), 大小: ({self.window_pos[2]}x{self.window_pos[3]})")
+                # 只在需要时更新窗口位置，避免重复获取导致的问题
+                should_update = force_update_position or (self.window_pos is None)
+
+                if should_update:
+                    logger.debug("  → 获取窗口位置...")
+                    self.window_pos = self.get_window_position()
+                    if self.window_pos:
+                        logger.info(f"  → 窗口位置: ({self.window_pos[0]}, {self.window_pos[1]}), 大小: ({self.window_pos[2]}x{self.window_pos[3]})")
+                    else:
+                        logger.warning("  ⚠️  无法获取窗口位置，将使用绝对坐标")
                 else:
-                    logger.warning("  ⚠️  无法获取窗口位置，将使用绝对坐标")
+                    logger.debug(f"  → 使用缓存的窗口位置: {self.window_pos}")
 
             return True
         except subprocess.CalledProcessError:
@@ -325,6 +337,18 @@ class THSMacTrader:
     def get_absolute_coords(self, relative_x: int, relative_y: int) -> Tuple[int, int]:
         """
         将相对坐标转换为绝对坐标
+
+        注意：必须先调用 activate_ths_window() 来初始化 window_pos
+
+        参数：
+            relative_x: 相对于窗口左上角的x坐标
+            relative_y: 相对于窗口左上角的y坐标
+
+        返回：
+            (abs_x, abs_y): 屏幕绝对坐标
+
+        异常：
+            RuntimeError: 当启用相对坐标模式但窗口位置未初始化时
         """
         if not self.use_relative_coords:
             return (relative_x, relative_y)
@@ -335,13 +359,29 @@ class THSMacTrader:
             logger.warning("  ⚠️  窗口位置未初始化，尝试获取...")
             self.window_pos = self.get_window_position()
 
+        # 如果仍然无法获取窗口位置，报错（不要永久关闭相对坐标模式）
         if self.window_pos is None:
-            logger.warning("  ⚠️  无法获取窗口位置，切换到绝对坐标模式")
-            self.use_relative_coords = False
-            return (relative_x, relative_y)
+            error_msg = (
+                "❌ 无法获取窗口位置！相对坐标转换失败。\n"
+                f"   相对坐标: ({relative_x}, {relative_y})\n"
+                "   可能原因：\n"
+                "   1. 未调用 activate_ths_window() 初始化窗口位置\n"
+                "   2. 同花顺应用未打开或窗口不可见\n"
+                "   3. 缺少辅助功能权限\n"
+                "   建议：在调用任何操作前，先确保 activate_ths_window() 成功"
+            )
+            logger.error(error_msg)
+            # 不要关闭相对坐标模式，而是抛出异常
+            raise RuntimeError("窗口位置未初始化，无法转换坐标。请先调用 activate_ths_window()")
 
         win_x, win_y, _, _ = self.window_pos
-        return (win_x + relative_x, win_y + relative_y)
+        abs_x, abs_y = win_x + relative_x, win_y + relative_y
+
+        # 调试日志（可选）
+        if logger.level <= 10:  # DEBUG level
+            logger.debug(f"坐标转换: 窗口({win_x}, {win_y}) + 相对({relative_x}, {relative_y}) = 绝对({abs_x}, {abs_y})")
+
+        return (abs_x, abs_y)
 
     def click_at(self, x: int, y: int, clicks: int = 1, debug: bool = False):
         """
@@ -652,26 +692,37 @@ class THSMacTrader:
         logger.info(f"{'='*50}")
 
         # 1. 激活同花顺窗口
-        if not self.activate_ths_window():
+        #    注意：force_update_position=False 表示如果 window_pos 已缓存，则不重新获取
+        #    这避免了重复获取窗口位置可能导致的问题（如获取到弹窗而非主窗口）
+        if not self.activate_ths_window(force_update_position=False):
+            logger.error("❌ 无法激活同花顺窗口")
             return False
 
-        # 2. 切换买入/卖出方向
+        # 2. 验证窗口位置已正确获取（防御性检查）
+        if self.use_relative_coords and self.window_pos is None:
+            logger.error("❌ 窗口位置未正确初始化，无法进行坐标转换")
+            logger.error("   建议：检查同花顺应用是否正常打开，或尝试重启应用")
+            return False
+
+        logger.info(f"✅ 窗口位置: {self.window_pos}")
+
+        # 3. 切换买入/卖出方向
         logger.info("切换交易方向...")
         self.switch_direction(order.direction)
 
-        # 3. 输入股票代码
+        # 4. 输入股票代码
         logger.info(f"输入股票代码: {order.stock_code}")
         self.input_stock_code(order.stock_code)
 
-        # 4. 输入价格
+        # 5. 输入价格
         logger.info(f"输入价格: {order.price}")
         self.input_price(order.price)
 
-        # 5. 输入数量
+        # 6. 输入数量
         logger.info(f"输入数量: {order.quantity}")
         self.input_quantity(order.quantity)
 
-        # 6. 确认下单
+        # 7. 确认下单
         if confirm:
             logger.info("⚠️  正在确认下单...")
             self.confirm_order()
@@ -2926,8 +2977,10 @@ class THSMacTrader:
         print(f"  → 使用相对坐标: {self.use_relative_coords}")
         if self.use_relative_coords and not self.window_pos:
             print(f"  ⚠️  相对坐标模式需要窗口位置，但获取失败")
-            print(f"  → 自动切换到绝对坐标模式")
-            self.use_relative_coords = False
+            print(f"  ⚠️  警告：后续坐标操作可能失败")
+            print(f"  💡 建议：检查同花顺窗口是否可见，或授予辅助功能权限")
+            # ❌ 不要永久关闭相对坐标模式！这会导致后续所有操作使用错误的坐标
+            # 之前的代码： self.use_relative_coords = False  (这行导致了 bug)
 
         print("\n" + "="*70)
 
