@@ -1,0 +1,1048 @@
+2026-03-01 11:00:37,316 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:00:37,317 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 11:00:37,317 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 11:00:37,317 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 11:00:37,317 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 11:00:37,317 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:04:38,883 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 11:04:38,884 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,149 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,150 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,151 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,152 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,153 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,154 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,155 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,155 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,155 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,155 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,158 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 stock quotes
+2026-03-01 11:04:39,158 - quant_system.short_swing.engines.sentiment_engine - ERROR - Failed to fetch market snapshot
+2026-03-01 11:04:39,158 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,204 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,205 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,206 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,207 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,208 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:04:39,210 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:04:39,296 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,297 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,298 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,299 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,300 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,301 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,302 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,305 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 stock quotes
+2026-03-01 11:04:39,305 - quant_system.short_swing.engines.theme_detector - WARNING - No strong stocks found for theme detection
+2026-03-01 11:04:39,306 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 11:04:39,407 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,407 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,407 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,407 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,407 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,407 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,408 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,409 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,410 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,411 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,412 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,413 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,414 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:04:39,416 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 stock quotes
+2026-03-01 11:04:39,417 - quant_system.short_swing.engines.stock_scorer - ERROR - Failed to fetch market snapshot
+2026-03-01 11:31:24,513 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 11:31:24,514 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,747 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,748 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,749 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:24,751 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 stock quotes
+2026-03-01 11:31:24,751 - quant_system.short_swing.engines.sentiment_engine - ERROR - Failed to fetch market snapshot
+2026-03-01 11:31:24,751 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,892 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,893 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,894 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,895 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,896 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse limit-up stock: string indices must be integers
+2026-03-01 11:31:24,898 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,015 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,016 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,017 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,018 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,019 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,021 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 stock quotes
+2026-03-01 11:31:25,021 - quant_system.short_swing.engines.theme_detector - WARNING - No strong stocks found for theme detection
+2026-03-01 11:31:25,021 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,145 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,146 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,147 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse quote item: string indices must be integers
+2026-03-01 11:31:25,148 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 stock quotes
+2026-03-01 11:31:25,148 - quant_system.short_swing.engines.stock_scorer - ERROR - Failed to fetch market snapshot
+2026-03-01 11:31:36,160 - quant_system.short_swing.main - INFO - 超短线交易信号系统关闭
+2026-03-01 11:31:37,205 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:31:37,205 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 11:31:37,205 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 11:31:37,205 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 11:31:37,205 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 11:31:37,205 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:31:41,713 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 11:31:41,713 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:31:41,987 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 11:31:42,091 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:31:42,091 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:31:42,092 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:31:42,262 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:31:42,264 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:31:42,265 - quant_system.short_swing.engines.theme_detector - INFO - Detected 0 valid themes
+2026-03-01 11:31:42,265 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 11:31:42,266 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:31:42,266 - quant_system.short_swing.engines.stock_scorer - INFO - Filtered 10 stocks from 100
+2026-03-01 11:31:42,273 - quant_system.short_swing.data.data_fetcher - ERROR - Failed to fetch model scores: 404 Client Error: Not Found for url: http://localhost:8999/comprehensive_score_custom_api
+Traceback (most recent call last):
+  File "/Users/tim/Documents/golang/auto_trade/quant_system/short_swing/data/data_fetcher.py", line 303, in get_model_scores
+    response.raise_for_status()
+  File "/Users/tim/Library/Python/3.9/lib/python/site-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: http://localhost:8999/comprehensive_score_custom_api
+2026-03-01 11:31:42,279 - quant_system.short_swing.engines.stock_scorer - INFO - Generated 0 candidates
+2026-03-01 11:32:19,217 - quant_system.short_swing.main - INFO - 超短线交易信号系统关闭
+2026-03-01 11:32:20,128 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:32:20,128 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 11:32:20,128 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 11:32:20,128 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 11:32:20,128 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 11:32:20,128 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:32:23,684 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 11:32:23,685 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:32:23,933 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 11:32:24,050 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:32:24,050 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:32:24,051 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:32:24,168 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:32:24,170 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:32:24,170 - quant_system.short_swing.engines.theme_detector - INFO - Detected 0 valid themes
+2026-03-01 11:32:24,171 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 11:32:24,172 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:32:24,172 - quant_system.short_swing.engines.stock_scorer - INFO - Filtered 10 stocks from 100
+2026-03-01 11:32:25,131 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,131 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,131 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:25,132 - quant_system.short_swing.data.data_fetcher - INFO - Fetched model scores for 0 stocks
+2026-03-01 11:32:25,132 - quant_system.short_swing.engines.stock_scorer - INFO - Generated 0 candidates
+2026-03-01 11:32:46,791 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 11:32:46,792 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:32:46,794 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:32:46,991 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:32:46,992 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:32:46,992 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:32:47,080 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:32:47,082 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:32:47,082 - quant_system.short_swing.engines.theme_detector - INFO - Detected 0 valid themes
+2026-03-01 11:32:47,083 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 11:32:47,084 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:32:47,085 - quant_system.short_swing.engines.stock_scorer - INFO - Filtered 10 stocks from 100
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,899 - quant_system.short_swing.data.data_fetcher - WARNING - Failed to parse model score: 'stock_code'
+2026-03-01 11:32:47,900 - quant_system.short_swing.data.data_fetcher - INFO - Fetched model scores for 0 stocks
+2026-03-01 11:32:47,900 - quant_system.short_swing.engines.stock_scorer - INFO - Generated 0 candidates
+2026-03-01 11:36:39,594 - quant_system.short_swing.main - INFO - 超短线交易信号系统关闭
+2026-03-01 11:36:40,588 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:36:40,588 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 11:36:40,588 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 11:36:40,588 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 11:36:40,588 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 11:36:40,588 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:36:44,159 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 11:36:44,160 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:36:44,362 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 11:36:44,453 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:36:44,453 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:36:44,453 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:36:44,498 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:36:44,499 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:36:44,500 - quant_system.short_swing.engines.theme_detector - INFO - Detected 0 valid themes
+2026-03-01 11:36:44,500 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 11:36:44,501 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:36:44,501 - quant_system.short_swing.engines.stock_scorer - INFO - Filtered 10 stocks from 100
+2026-03-01 11:36:45,293 - quant_system.short_swing.data.data_fetcher - INFO - Fetched model scores for 10 stocks
+2026-03-01 11:36:45,293 - quant_system.short_swing.engines.stock_scorer - INFO - Generated 0 candidates
+2026-03-01 11:37:26,935 - quant_system.short_swing.api.routes - INFO - API: /sentiment called
+2026-03-01 11:37:26,935 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:37:27,197 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 11:37:27,316 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:37:27,317 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:54:40,752 - quant_system.short_swing.main - INFO - 超短线交易信号系统关闭
+2026-03-01 11:54:41,654 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:54:41,654 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 11:54:41,654 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 11:54:41,654 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 11:54:41,654 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 11:54:41,654 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 11:54:45,526 - quant_system.short_swing.api.routes - INFO - API: /sentiment called
+2026-03-01 11:54:45,526 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:54:45,526 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:54:45,527 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 11:54:45,755 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 11:54:45,755 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:54:45,755 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 11:54:45,862 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:54:45,862 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:54:50,002 - quant_system.short_swing.api.routes - INFO - API: /sentiment called
+2026-03-01 11:54:50,002 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:54:50,002 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:54:50,003 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 11:54:50,005 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:54:50,007 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:54:50,007 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 11:54:50,131 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:54:50,132 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:54:54,925 - quant_system.short_swing.api.routes - INFO - API: /sentiment called
+2026-03-01 11:54:54,925 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 11:54:54,925 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:54:54,926 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 11:54:54,928 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 11:54:54,929 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:54:54,930 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 11:54:55,050 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:54:55,050 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 11:57:07,741 - quant_system.short_swing.api.routes - INFO - API: /themes called
+2026-03-01 11:57:07,742 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 11:57:07,742 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:57:07,743 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 11:57:07,954 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 11:57:07,954 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 11:57:07,955 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 11:57:08,060 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 11:57:08,060 - quant_system.short_swing.engines.theme_detector - INFO - Detected 0 valid themes
+2026-03-01 12:01:57,416 - quant_system.short_swing.main - INFO - 超短线交易信号系统关闭
+2026-03-01 12:01:58,286 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 12:01:58,286 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 12:01:58,286 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 12:01:58,286 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 12:01:58,286 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 12:01:58,286 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 12:02:02,529 - quant_system.short_swing.api.routes - INFO - API: /themes called
+2026-03-01 12:02:02,529 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 12:02:02,529 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:02:02,529 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 12:02:02,746 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 12:02:02,747 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:02:02,748 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 12:02:02,868 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 12:02:02,869 - quant_system.short_swing.engines.theme_detector - INFO - Detected 0 valid themes
+2026-03-01 12:04:51,208 - quant_system.short_swing.api.routes - INFO - API: /themes called
+2026-03-01 12:04:51,208 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 12:04:51,208 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:04:51,208 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 12:04:51,384 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 12:04:51,384 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:04:51,384 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 12:04:51,385 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 12:04:51,385 - quant_system.short_swing.engines.theme_detector - INFO - Detected 1 valid themes
+2026-03-01 12:04:51,385 - quant_system.short_swing.engines.theme_detector - INFO -   - 环保: 2 stocks, score=55.6, leader=中国天楹
+2026-03-01 12:04:51,386 - httpx - INFO - HTTP Request: GET http://testserver/api/v1/themes "HTTP/1.1 200 OK"
+2026-03-01 12:07:21,419 - quant_system.short_swing.main - INFO - 超短线交易信号系统关闭
+2026-03-01 12:07:22,333 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 12:07:22,334 - quant_system.short_swing.main - INFO - 超短线交易信号系统启动中...
+2026-03-01 12:07:22,334 - quant_system.short_swing.main - INFO - 版本: 1.0.0
+2026-03-01 12:07:22,334 - quant_system.short_swing.main - INFO - 服务地址: http://0.0.0.0:8001
+2026-03-01 12:07:22,334 - quant_system.short_swing.main - INFO - API文档: http://localhost:8001/docs
+2026-03-01 12:07:22,334 - quant_system.short_swing.main - INFO - ============================================================
+2026-03-01 12:07:29,244 - quant_system.short_swing.api.routes - INFO - API: /themes called
+2026-03-01 12:07:29,245 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 12:07:29,245 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:07:29,245 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 12:07:29,447 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 12:07:29,447 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:07:29,448 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 12:07:29,539 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 12:07:29,539 - quant_system.short_swing.engines.theme_detector - INFO - Detected 1 valid themes
+2026-03-01 12:07:29,539 - quant_system.short_swing.engines.theme_detector - INFO -   - 环保: 2 stocks, score=55.6, leader=中国天楹
+2026-03-01 12:08:05,305 - quant_system.short_swing.api.routes - INFO - API: /candidates called (limit=20, min_score=65.0)
+2026-03-01 12:08:05,306 - quant_system.short_swing.engines.sentiment_engine - INFO - Starting sentiment analysis...
+2026-03-01 12:08:05,306 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:08:05,306 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 12:08:05,573 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 100 stock quotes
+2026-03-01 12:08:05,573 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:08:05,574 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 12:08:05,756 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 12:08:05,756 - quant_system.short_swing.engines.sentiment_engine - INFO - Sentiment state: freezing (limit_up=0, avg_change=0.66%, rising_ratio=51.00%)
+2026-03-01 12:08:05,757 - quant_system.short_swing.engines.theme_detector - INFO - Starting theme detection...
+2026-03-01 12:08:05,757 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:08:05,757 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached limit-up data available, falling back to real-time API
+2026-03-01 12:08:05,808 - quant_system.short_swing.data.data_fetcher - INFO - Fetched 0 limit-up stocks
+2026-03-01 12:08:05,808 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:08:05,810 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 12:08:05,811 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 12:08:05,812 - quant_system.short_swing.engines.theme_detector - INFO - Detected 1 valid themes
+2026-03-01 12:08:05,813 - quant_system.short_swing.engines.theme_detector - INFO -   - 环保: 2 stocks, score=55.6, leader=中国天楹
+2026-03-01 12:08:05,813 - quant_system.short_swing.engines.stock_scorer - INFO - Generating stock candidates (min_score=65.0, limit=20)...
+2026-03-01 12:08:05,813 - quant_system.short_swing.utils.trading_time - INFO - Currently not in trading time (non_trading_day), use cached data
+2026-03-01 12:08:05,814 - quant_system.short_swing.data.data_fetcher - WARNING - Non-trading time but no cached data available, falling back to real-time API
+2026-03-01 12:08:05,815 - quant_system.short_swing.data.data_fetcher - INFO - Market snapshot loaded from cache
+2026-03-01 12:08:05,816 - quant_system.short_swing.engines.stock_scorer - INFO - Filtered 10 stocks from 100
+2026-03-01 12:08:06,637 - quant_system.short_swing.data.data_fetcher - INFO - Fetched model scores for 10 stocks
+2026-03-01 12:08:06,638 - quant_system.short_swing.engines.stock_scorer - INFO - Generated 0 candidates

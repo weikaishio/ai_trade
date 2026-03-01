@@ -1,0 +1,12 @@
+# 超短线交易信号系统依赖
+
+# FastAPI框架
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# HTTP请求
+requests>=2.31.0
+
+# 工具库
+python-multipart>=0.0.6

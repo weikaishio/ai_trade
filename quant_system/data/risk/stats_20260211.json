@@ -1,0 +1,10 @@
+{
+  "date": "20260211",
+  "daily_trade_count": 20,
+  "daily_buy_count": 0,
+  "daily_profit_loss": 5966.399999999997,
+  "last_trade_time": "2026-02-11T01:04:53.122099",
+  "last_buy_time": null,
+  "circuit_breaker_active": false,
+  "circuit_breaker_until": null
+}
